@@ -11,13 +11,14 @@ export class Game extends Phaser.Scene
         this.map = null;
         this.score = 0;
         this.recipe = {
-		name: "Spicy Chicken",
-		ingredients: [
-			{name: "Tomato", quantity: "8"},
-			{name: "Garlic", quantity: "1"},
-			{name: "Chicken", quantity: "1"},
-			{name: "Ginger", quantity: "3"},
-			{name: "Green Chilli", quantity: "4"}
+            name: "Veg Curry",
+            ingredients: [
+                {name: "Carrot", quantity: "8", texture: "vegetable_carrot"},
+                {name: "Corn", quantity: "1", texture: "vegetable_corn"},
+                {name: "Potato", quantity: "4", texture: "vegetable_potato"},
+                {name: "Garlic", quantity: "1", texture: "vegetable_garlic"},
+                {name: "Ginger", quantity: "3", texture: "vegetable_ginger"},
+                {name: "Onion", quantity: "4", texture: "vegetable_onion"}
 	    ]}
         this.invHash = new Map();
         this.recipe.ingredients.forEach(i => this.invHash.set(i.name, 0));
@@ -25,19 +26,6 @@ export class Game extends Phaser.Scene
          this.client = null;
         this.room = null;
         this.remotePlayers = new Map();
-    }
-
-
-    preload()
-    { 
-        this.load.image('player', './../assets/circle-orange.png');
-        this.load.image('food', './../assets/hexagon-blue.png');
-        this.load.image('rabbit', './../assets/hexagon-gray.png');
-        this.load.tilemapTiledJSON('map', './../assets/sproutMap.tmj');
-        this.load.image('tiles', './../assets/Tilesets/Grass.png');
-        this.load.image('biomTiles', './../assets/Objects/Basic_Grass_Biom_things.png');
-        this.load.audio('pick', './../assets/sounds/pick.ogg');
-        this.load.audio('drop', './../assets/sounds/drop.ogg');
     }
 
     async create()
@@ -62,7 +50,7 @@ export class Game extends Phaser.Scene
         // camera
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
         this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
-        this.cameras.main.setZoom(1.8);
+        this.cameras.main.setZoom(2.0);
         this.deceleration = 0.5;
       
         this.physics.world.createDebugGraphic();
@@ -70,7 +58,7 @@ export class Game extends Phaser.Scene
         this.dropKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         
         this.foodItems = this.add.group();
-        const foodItemGen = new FoodItemGenerator(this, 'food', this.map.widthInPixels, this.map.heightInPixels);
+        const foodItemGen = new FoodItemGenerator(this, this.map.widthInPixels, this.map.heightInPixels);
         const staticFoodItems = foodItemGen.generateStaticFood(30, this.recipe);
         staticFoodItems.forEach(f => this.foodItems.add(f));
         // Set up player's danger zone to detect food items
@@ -94,21 +82,24 @@ export class Game extends Phaser.Scene
         });
 
         // Create UI text for inventory display
-        this.inventoryText = this.add.text(510, 500, 'Inventory Empty', {
+        this.inventoryText = this.add.text(530, 500, 'Inventory Empty', {
             fontSize: '12px',
-            fill: '#ff0000'
+            fill: '#ff0000',
+            align: 'left'
         });
         this.inventoryText.setOrigin(0.5);
         this.inventoryText.setScrollFactor(0); // Fix to camera
+        this
         
         // Create UI text for recipe display
         let itemNames = "";
         this.recipe.ingredients.forEach(ing => {
             itemNames += `${ing.name}-${ing.quantity} `;
         })
-        this.goalText = this.add.text(500, 520, `Goal: ${itemNames}`, {
+        this.goalText = this.add.text(530, 520, `Goal: ${itemNames}`, {
             fontSize: '12px',
-            fill: '#ff0000'
+            fill: '#ff0000',
+            align: 'left'
         });
         this.goalText.setOrigin(0.5);
         this.goalText.setScrollFactor(0); // Fix to camera
@@ -129,7 +120,7 @@ export class Game extends Phaser.Scene
         });
         this.connectionText.setOrigin(0.5);
         this.connectionText.setScrollFactor(0);
-        const playerName = "Player" + Math.floor(Math.random() * 100);
+        const playerName = "Player " + Math.floor(Math.random() * 100);
         this.playerName = this.add.text(400, 200, `${playerName}`, {
             fontSize: '18px',
             fill: '#000fff'

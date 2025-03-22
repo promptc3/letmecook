@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { Bootloader } from '../scenes/Bootloader.js';
 import { Start } from '../scenes/Start.js';
 import { Game } from '../scenes/Game.js';
 import { GameOver } from '../scenes/GameOver.js';
@@ -12,7 +13,7 @@ const config = {
     height: 720,
     pixelArt: false,
     scene: [
-        Start, Game, GameOver
+        Bootloader, Start, Game, GameOver
     ],
     scale: {
         mode: Phaser.Scale.FIT,

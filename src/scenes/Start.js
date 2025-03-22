@@ -5,12 +5,6 @@ export class Start extends Phaser.Scene
         super({key: 'Start'});
     }
     
-    preload() {
-        // Load assets needed for the start screen
-        this.load.image('background', './../assets/space.png');
-        this.load.image('start-button', './../assets/start-button.png');
-    }
-
     create() {
         // Add background
         this.add.image(400, 300, 'background');
