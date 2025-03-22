@@ -36,6 +36,8 @@ export class Game extends Phaser.Scene
         this.load.tilemapTiledJSON('map', './../assets/sproutMap.tmj');
         this.load.image('tiles', './../assets/Tilesets/Grass.png');
         this.load.image('biomTiles', './../assets/Objects/Basic_Grass_Biom_things.png');
+        this.load.audio('pick', './../assets/sounds/pick.ogg');
+        this.load.audio('drop', './../assets/sounds/drop.ogg');
     }
 
     async create()
@@ -69,7 +71,7 @@ export class Game extends Phaser.Scene
         
         this.foodItems = this.add.group();
         const foodItemGen = new FoodItemGenerator(this, 'food', this.map.widthInPixels, this.map.heightInPixels);
-        const staticFoodItems = foodItemGen.generateStaticFood(30);
+        const staticFoodItems = foodItemGen.generateStaticFood(30, this.recipe);
         staticFoodItems.forEach(f => this.foodItems.add(f));
         // Set up player's danger zone to detect food items
         this.player.setupDangerZoneOverlap(this.foodItems);
@@ -77,6 +79,7 @@ export class Game extends Phaser.Scene
         // Listen for the obstacleCollected event from the player
         this.events.on('foodCollected', (pickedItem, inventory) => {
             console.log(`Picked ${pickedItem.name}`);
+            this.sound.play('pick');
             if (pickedItem instanceof FoodItem) {
                 // Handle food item pickup
                 pickedItem.pickup(this.player);
@@ -91,12 +94,24 @@ export class Game extends Phaser.Scene
         });
 
         // Create UI text for inventory display
-        this.inventoryText = this.add.text(20, 20, 'Inventory: Empty', {
-            fontSize: '24px',
-            fill: '#ffffff'
+        this.inventoryText = this.add.text(510, 500, 'Inventory Empty', {
+            fontSize: '12px',
+            fill: '#ff0000'
         });
+        this.inventoryText.setOrigin(0.5);
         this.inventoryText.setScrollFactor(0); // Fix to camera
         
+        // Create UI text for recipe display
+        let itemNames = "";
+        this.recipe.ingredients.forEach(ing => {
+            itemNames += `${ing.name}-${ing.quantity} `;
+        })
+        this.goalText = this.add.text(500, 520, `Goal: ${itemNames}`, {
+            fontSize: '12px',
+            fill: '#ff0000'
+        });
+        this.goalText.setOrigin(0.5);
+        this.goalText.setScrollFactor(0); // Fix to camera
         // Create interaction message
         this.messageText = this.add.text(400, 550, '', {
             fontSize: '18px',
@@ -112,17 +127,24 @@ export class Game extends Phaser.Scene
             fontSize: '18px',
             fill: '#ffffff'
         });
-        this.connectionText.setOrigin(0.5, 0);
+        this.connectionText.setOrigin(0.5);
         this.connectionText.setScrollFactor(0);
-        await this.connectToServer();
+        const playerName = "Player" + Math.floor(Math.random() * 100);
+        this.playerName = this.add.text(400, 200, `${playerName}`, {
+            fontSize: '18px',
+            fill: '#000fff'
+        });
+        this.playerName.setOrigin(0.5);
+        this.playerName.setScrollFactor(0);
+        await this.connectToServer(playerName);
         this.setupRoomListeners();
     }
 
-    async connectToServer() {
+    async connectToServer(playerName) {
         try {
             this.client = new Client('http://localhost:2567');
             this.room = await this.client.joinOrCreate('my_room', {
-                name: "Player" + Math.floor(Math.random() * 100),
+                name: playerName,
                 x: this.player.x,
                 y: this.player.y,
                 rotation: this.player.rotation
@@ -267,13 +289,13 @@ export class Game extends Phaser.Scene
     // Update the inventory display text
     updateInventoryText() {
         if (this.player.inventory.length === 0) {
-            this.inventoryText.setText('Inventory: Empty');
+            this.inventoryText.setText('Inventory Empty');
         } else {
             let itemNames = "";
             this.recipe.ingredients.forEach(ing => {
                 itemNames += `${ing.name}-${this.invHash.get(ing.name)} `;
             })
-            this.inventoryText.setText(`Inventory: ${itemNames}`);
+            this.inventoryText.setText(`Current: ${itemNames}`);
         }
     }
     // Display pickup message
@@ -285,6 +307,8 @@ export class Game extends Phaser.Scene
     dropItem() {
         if (this.player.inventory.length > 0) {
             const lastItem = this.player.inventory.pop();
+            console.info(`Dropping ${lastItem.name}`);
+            this.sound.play('drop');
             
             if (lastItem instanceof FoodItem) {
                 // Drop the item slightly in front of the player based on rotation
@@ -296,17 +320,17 @@ export class Game extends Phaser.Scene
                 
                 lastItem.drop(dropX, dropY);
                 this.displayMessage(`Dropped: ${lastItem.name}`);
+                // Send item drop to server
+                if (this.room) {
+                    this.room.send("itemDrop", {
+                        itemId: lastItem.getId(),
+                        itemName: lastItem.name,
+                        x: dropX,
+                        y: dropY
+                    });
+                }
             }
         }
-        // Send item drop to server
-            if (this.room) {
-                this.room.send("itemDrop", {
-                    itemId: lastItem.getId(),
-                    itemName: lastItem.name,
-                    x: dropX,
-                    y: dropY
-                });
-            }
     }
 
     // Generic message display

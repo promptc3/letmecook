@@ -7,9 +7,19 @@ export default class FoodItemGenerator {
         this.texture = texture;
     }
 
-    generateStaticFood(count = 50) {
+    generateStaticFood(count = 50, recipe) {
         const foodGroup = []
         const ings = ["Tomato", "Garlic", "Ginger", "Green Chilli", "Potato", "Egg", "Onion", "Chicken"]; 
+        // create min quantity of each ingredient
+        recipe.forEach(ing => {
+            const x = Phaser.Math.Between(0, this.mapWidth);
+            const y = Phaser.Math.Between(0, this.mapHeight);
+            for (let i = 0; i < ing.quantity; i++) {
+                const foodItem = new FoodItem(this.scene, x, y, this.texture, ing.name, 'static');
+                foodGroup.push(foodItem);
+            }
+        });
+        // add random quantity of random ingredients
         for(let i=0; i < count; i++) {
             const random = Math.floor(Math.random() * ings.length);
             const x = Phaser.Math.Between(0, this.mapWidth);

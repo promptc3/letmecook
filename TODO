@@ -1,0 +1,5 @@
+☐ Load sprites of each object
+☐ Create a sprite for each player
+☐ Create a bootloader screen for loading sprites (Copy from tutorial)
+☐ Adjust multiplayer view to show all players correctly
+☐ Test game loop with multiple players
