@@ -33,11 +33,11 @@ export class Bootloader extends Phaser.Scene {
     this.load.tilemapTiledJSON('map', './../assets/sproutMap.tmj');
     this.load.image('tiles', './../assets/Tilesets/Grass.png');
     this.load.image('biomTiles', './../assets/Objects/Basic_Grass_Biom_things.png');
-    const vegetables = ["vegetable_bellpepper_green", "vegetable_carrot", "vegetable_corn", "vegetable_cucumber", "vegetable_eggplant", "vegetable_onion", "vegetable_potato", "vegetable_tomato", "vegetable_garlic", "vegetable_ginger", "vegetable_bellpepper_red","vegetable_bellpepeer_yellow", "vegetable_pumpkin"];
+    const vegetables = ["vegetable_bellpepper_green", "vegetable_carrot", "vegetable_corn", "vegetable_cucumber", "vegetable_eggplant", "vegetable_onion", "vegetable_potato", "vegetable_tomato", "vegetable_garlic", "vegetable_ginger", "vegetable_bellpepper_red","vegetable_bellpepper_yellow", "vegetable_pumpkin"];
     vegetables.forEach(item => {
         this.load.image(item, `./../assets/food/${item}.png`);
     });
-    const fruits = ["fruit_apple", "fruit_banana", "fruit_cherry", "fruit_greengrape", "fruit_kiwi", "fruit_lemon", "fruit_lime", "fruit_orange", "fruit_peach", "fruit_pear", "fruit_pineapple", "fruit_strawberry", "fruit_watermelon"];
+    const fruits = ["fruit_apple", "fruit_banana", "fruit_cherry", "fruit_greengrape", "fruit_kiwi", "fruit_lemon", "fruit_lime", "fruit_orange", "fruit_peach", "fruit_strawberry", "fruit_watermelon"];
     fruits.forEach(item => {
         this.load.image(item, `./../assets/food/${item}.png`);
     });

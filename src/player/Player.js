@@ -9,6 +9,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         if (width !== null && height !== null) {
             this.setDisplaySize(width, height);
         }
+        this.setScale(0.5);
 
         const spriteHeight = this.height * this.scaleY;
 
@@ -38,7 +39,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         
         // Store a reference to the input manager
         this.input = scene.input;
+        this.name = 'Player';
     }
+
+    setName(name) {
+        this.name = this.scene.add.text(this.x, this.y, name, { fontSize: '12px', fill: '#000' });
+    }
+
 
     update() {
         // Follow cursor with smooth lerping
@@ -68,6 +75,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             this.body.velocity.y = Phaser.Math.Linear(this.body.velocity.y, 0, this.lerpFactor * 2);
         }
         this.updateDangerZone();
+        this.updateText();
     }
 
     updateDangerZone() {
@@ -75,6 +83,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.dangerZone.y = this.y;
     }
 
+    updateText() {
+        this.name.x = this.x - this.width/2;
+        this.name.y = this.y - this.height/2;
+    }
     setupDangerZoneOverlap(foodItems) {
         this.scene.physics.add.overlap(
             this.dangerZone, 

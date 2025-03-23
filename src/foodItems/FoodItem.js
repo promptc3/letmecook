@@ -2,6 +2,7 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, texture, name = "food", type = "static") {
         super(scene, x, y, texture);
         this.setDisplaySize(16, 16);
+        this.setScale(2);
         // Add the sprite to the scene
         scene.add.existing(this);
         scene.physics.add.existing(this, type === "static"); // true = static body

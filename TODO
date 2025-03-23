@@ -1,5 +1,16 @@
-☐ Load sprites of each object
-☐ Create a sprite for each player
-☐ Create a bootloader screen for loading sprites (Copy from tutorial)
-☐ Adjust multiplayer view to show all players correctly
-☐ Test game loop with multiple players
+✔ Load sprites of each object @done(25-03-22 21:56)
+✔ Create a bootloader screen for loading sprites (Copy from tutorial) @done(25-03-22 21:56)
+✔ Show player names with sprite @done(25-03-23 18:44)
+✔ Adjust multiplayer view to show all players correctly @done(25-03-23 18:44)
+✔ Move food item generation to server side @done(25-03-23 19:43)
+☐ Add pickup and drop in multiplayer
+☐ Add Dash powerup for player
+
+# All Powerups
+1. Dash
+2. Push
+3. Pull
+4. Stagger
+5. Flash
+6. Make smaller
+7. Make bigger

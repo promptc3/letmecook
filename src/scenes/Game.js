@@ -1,7 +1,6 @@
 import {Client, getStateCallbacks} from 'colyseus.js';
 import Player from '../player/Player.js';
 import FoodItem from '../foodItems/FoodItem.js';
-import FoodItemGenerator from '../foodItems/FoodItemGenerator.js';
 
 export class Game extends Phaser.Scene
 {
@@ -50,7 +49,7 @@ export class Game extends Phaser.Scene
         // camera
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
         this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
-        this.cameras.main.setZoom(2.0);
+        this.cameras.main.setZoom(1.8);
         this.deceleration = 0.5;
       
         this.physics.world.createDebugGraphic();
@@ -58,9 +57,6 @@ export class Game extends Phaser.Scene
         this.dropKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         
         this.foodItems = this.add.group();
-        const foodItemGen = new FoodItemGenerator(this, this.map.widthInPixels, this.map.heightInPixels);
-        const staticFoodItems = foodItemGen.generateStaticFood(30, this.recipe);
-        staticFoodItems.forEach(f => this.foodItems.add(f));
         // Set up player's danger zone to detect food items
         this.player.setupDangerZoneOverlap(this.foodItems);
 
@@ -125,20 +121,23 @@ export class Game extends Phaser.Scene
             fontSize: '18px',
             fill: '#000fff'
         });
+        this.player.setName(playerName);
         this.playerName.setOrigin(0.5);
         this.playerName.setScrollFactor(0);
         await this.connectToServer(playerName);
         this.setupRoomListeners();
     }
 
-    async connectToServer(playerName) {
+
+    async connectToServer(name) {
         try {
             this.client = new Client('http://localhost:2567');
+            console.log("Client created", this.client, " playerName: ", name);
             this.room = await this.client.joinOrCreate('my_room', {
-                name: playerName,
+                name: this.playerName.text,
                 x: this.player.x,
                 y: this.player.y,
-                rotation: this.player.rotation
+                rotation: this.player.rotation,
             });
             this.connectionText.setText('Connected');
             this.connectionText.setFill('#00ff00');
@@ -154,21 +153,19 @@ export class Game extends Phaser.Scene
         $(this.room.state).players.onAdd((player, sessionId) => {
             if (sessionId === this.room.sessionId) return;
 
-            const remotePlayer = this.physics.add.sprite(player.x, player.y, 'player'); 
+            const remotePlayer = new Player(this, player.x, player.y, 'player', 16, 16);
+            this.physics.add.collider(remotePlayer, this.player);
+            console.log(`Remote player ${player.name} joined`, player);
+            remotePlayer.setName(player.name);
             remotePlayer.sessionId = sessionId;
             remotePlayer.rotation = player.rotation;
             this.remotePlayers.set(sessionId, remotePlayer);
             $(player).onChange(() => {
                 if (remotePlayer) {
-                    this.tweens.add({
-                        targets: remotePlayer,
-                        x: player.x,
-                        y: player.y,
-                        rotate: player.rotation,
-                        duration: 100,
-                        ease: 'Linear',
-                        repeat: 0
-                    })
+                    remotePlayer.setPosition(player.x, player.y);
+                    remotePlayer.setRotation(player.rotation);
+                    remotePlayer.updateDangerZone();
+                    remotePlayer.updateText();
                 }
             })
         })
@@ -181,6 +178,10 @@ export class Game extends Phaser.Scene
             }
         });
 
+        $(this.room.state).foodItems.onAdd((foodItem, sessionId) => {
+            const item = new FoodItem(this, foodItem.x, foodItem.y, foodItem.texture, foodItem.name, foodItem.static ? "static" : "dynamic");
+            this.foodItems.add(item);
+        });
         // Listen for food pickup broadcasts from server
         this.room.onMessage("itemPickedUp", (data) => {
             // Handle remote player picking up an item
@@ -333,7 +334,7 @@ export class Game extends Phaser.Scene
         this.tweens.add({
             targets: this.messageText,
             alpha: 0,
-            duration: 2000,
+            duration: 4000,
             ease: 'Power2'
         });
     }
