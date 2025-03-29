@@ -16,11 +16,11 @@
             "scaleInEditor": 1
         },
         "sproutMap.tmj": {
-            "scale": 3,
-            "selectedLayer": 2,
+            "scale": 0.5,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 961.1666666666666,
-                "y": 315.16666666666663
+                "x": 1440,
+                "y": 765
             }
         },
         "sproutMap.tmj#Biom": {

@@ -307,9 +307,7 @@ export class Game extends Phaser.Scene
     }
 
     handleDropZoneEnter(player, zone) {
-        const inventorySize = player.inventory.length;
         if (this.checkIngredients()) {
-            this.dropItem(inventorySize);
             this.player.isPlaying = false;
             this.room.send("playerFinished", {
                 playerId: this.room.sessionId,

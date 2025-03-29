@@ -6,7 +6,10 @@
 ✔ Add pickup and drop in multiplayer @done(25-03-29 17:26)
 ✔ Add Dash powerup for player @done(25-03-29 17:26)
 ✔ Add stun @done(25-03-29 17:34)
-☐ Add game over screen with scoreboard for multiplayer
+✔ Add game over screen with scoreboard for multiplayer @done(25-03-29 18:40)
+☐ Host the game on a server
+☐ Add authentication to the game
+☐ Add moving enemies
 
 # All Powerups
 1. Dash
