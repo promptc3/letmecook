@@ -45,7 +45,7 @@ export class Game extends Phaser.Scene
         // Create player
         this.player = new Player(this, 400, 300, 'player', 16, 16);
         
-        this.physics.add.collider(this.player, this.treeLayer, this.handleWallCollision);
+        this.physics.add.collider(this.player, this.treeLayer, this.handleCollision());
         this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
         // camera
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
@@ -113,8 +113,8 @@ export class Game extends Phaser.Scene
         this.setupRoomListeners();
     }
 
-    handleWallCollision() {
-        this.player.handleWallCollision();
+    handleCollision() {
+        this.player.handleCollision();
         this.dropItem((Math.random()*4) - 1);
     }
     setupEventListeners() {
@@ -182,7 +182,7 @@ export class Game extends Phaser.Scene
             if (sessionId === this.room.sessionId) return;
 
             const remotePlayer = new Player(this, player.x, player.y, 'player', 16, 16);
-            this.physics.add.collider(remotePlayer, this.player);
+            this.physics.add.collider(remotePlayer, this.player, this.handleCollision());
             console.log(`Remote player ${player.name} joined`, player);
             remotePlayer.setName(player.name);
             remotePlayer.sessionId = sessionId;

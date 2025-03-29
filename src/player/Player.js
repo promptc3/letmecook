@@ -146,7 +146,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         });
     }
 
-    handleWallCollision() {
+    handleCollision() {
         if (this.isStunned) return false;
         if (this.isDashing && !this.isStunned) {
             this.isStunned = true;
