@@ -1,5 +1,5 @@
 import { Room, Client } from "@colyseus/core";
-import { MyRoomState, Player, FoodItem, PowerUp } from "./schema/MyRoomState";
+import { MyRoomState, Player, FoodItem, PowerUp, Score } from "./schema/MyRoomState";
 
 interface RecipeIngredient {
   name: string;
@@ -21,12 +21,12 @@ export class MyRoom extends Room<MyRoomState> {
   recipe: Recipe = {
       name: "Veg Curry",
       ingredients: [
-          {name: "Carrot", quantity: "8", texture: "vegetable_carrot"},
+          {name: "Carrot", quantity: "2", texture: "vegetable_carrot"},
           {name: "Corn", quantity: "1", texture: "vegetable_corn"},
-          {name: "Potato", quantity: "4", texture: "vegetable_potato"},
+          {name: "Potato", quantity: "2", texture: "vegetable_potato"},
           {name: "Garlic", quantity: "1", texture: "vegetable_garlic"},
-          {name: "Ginger", quantity: "3", texture: "vegetable_ginger"},
-          {name: "Onion", quantity: "4", texture: "vegetable_onion"}
+          {name: "Ginger", quantity: "2", texture: "vegetable_ginger"},
+          {name: "Onion", quantity: "1", texture: "vegetable_onion"}
   ]}
   onCreate (options: any) {
     console.log("Game room created", options);
@@ -81,6 +81,18 @@ export class MyRoom extends Room<MyRoomState> {
           this.broadcast("powerUpPickedUp", { powerUpId: message.powerUpId, playerId: client.sessionId });
           this.state.powerUps.delete(message.powerUpId);
         }
+      }
+    });
+
+    this.onMessage("playerFinished", (client, message) => {
+      const player = this.state.players.get(client.sessionId);
+      if (player) {
+        player.playDuration = message.playDuration;
+        const playerScore = new Score();
+        playerScore.playerId = client.sessionId;
+        playerScore.playerName = player.name;
+        playerScore.score = message.playDuration;
+        this.state.scoreBoard.set(client.sessionId, playerScore);
       }
     });
   }

@@ -9,16 +9,15 @@ export class Game extends Phaser.Scene
     {
         super({key: 'Game'});
         this.map = null;
-        this.score = 0;
         this.recipe = {
             name: "Veg Curry",
             ingredients: [
-                {name: "Carrot", quantity: "8", texture: "vegetable_carrot"},
+                {name: "Carrot", quantity: "2", texture: "vegetable_carrot"},
                 {name: "Corn", quantity: "1", texture: "vegetable_corn"},
-                {name: "Potato", quantity: "4", texture: "vegetable_potato"},
+                {name: "Potato", quantity: "2", texture: "vegetable_potato"},
                 {name: "Garlic", quantity: "1", texture: "vegetable_garlic"},
-                {name: "Ginger", quantity: "3", texture: "vegetable_ginger"},
-                {name: "Onion", quantity: "4", texture: "vegetable_onion"}
+                {name: "Ginger", quantity: "2", texture: "vegetable_ginger"},
+                {name: "Onion", quantity: "1", texture: "vegetable_onion"}
 	    ]}
         this.invHash = new Map();
         this.recipe.ingredients.forEach(i => this.invHash.set(i.name, 0));
@@ -26,6 +25,7 @@ export class Game extends Phaser.Scene
          this.client = null;
         this.room = null;
         this.remotePlayers = new Map();
+        this.scoreBoard = [];
     }
 
     async create()
@@ -101,6 +101,13 @@ export class Game extends Phaser.Scene
         });
         this.connectionText.setOrigin(0.5);
         this.connectionText.setScrollFactor(0);
+        this.scoreBoardText = this.add.text(100, 20, '', {
+            fontSize: '18px',
+            fill: '#ffffff',
+            backgroundColor: '#000000'
+        });
+        this.scoreBoardText.setOrigin(0.5);
+        this.scoreBoardText.setScrollFactor(0);
         const playerName = "Player " + Math.floor(Math.random() * 100);
         this.playerName = this.add.text(400, 200, `${playerName}`, {
             fontSize: '18px',
@@ -218,6 +225,11 @@ export class Game extends Phaser.Scene
             this.powerUps.add(newPowerup);
         });
 
+        $(this.room.state).scoreBoard.onAdd((score, sessionId) => {
+            console.log("Scoreboard: ", score);
+            this.scoreBoard.push(score);
+        });
+
         this.room.onMessage("itemPickedUp", (data) => {
             const { playerId, itemId } = data;
 
@@ -298,9 +310,15 @@ export class Game extends Phaser.Scene
         const inventorySize = player.inventory.length;
         if (this.checkIngredients()) {
             this.dropItem(inventorySize);
+            this.player.isPlaying = false;
+            this.room.send("playerFinished", {
+                playerId: this.room.sessionId,
+                playerName: this.player.name,
+                playDuration: Math.round(this.player.duration/1000),
+            });
             this.cameras.main.fadeOut(200, 0, 0, 0);
             this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
-                this.scene.start('GameOver', {score: Math.round(this.score)});
+                this.scene.start('GameOver', {score: Math.round(this.player.duration/1000)});
             });
         }
     }
@@ -350,6 +368,13 @@ export class Game extends Phaser.Scene
         }
     }
 
+    updateScoreBoard() {
+        let scoreText = "Scoreboard:\n";
+        this.scoreBoard.forEach((player) => {
+            scoreText += `${player.name}: ${player.playDuration} seconds\n`;
+        });
+        this.scoreBoardText.setText(scoreText);
+    }
     update(time, delta) {
         this.player.update();
         // Update inventory display
@@ -375,7 +400,6 @@ export class Game extends Phaser.Scene
     displayPickupMessage(itemName) {
         this.displayMessage(`Picked up: ${itemName}`);
     }
-
 
     // Generic message display
     displayMessage(text) {

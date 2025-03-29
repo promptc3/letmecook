@@ -44,8 +44,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         // Store a reference to the input manager
         this.input = scene.input;
         this.name = 'Player';
+        this.isPlaying = true;
+        this.duration = 0;
 
-        // Dash properties
+        // Other properties
         this.isDashing = false;
         this.dashSpeed = 1200;
         this.dashDuration = 800;
@@ -212,5 +214,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         }
         this.updateDangerZone();
         this.updateText();
+        // update playing duration
+        if (this.isPlaying) {
+            this.duration = this.scene.time.now - this.scene.startTime;
+        }
     }
 }
