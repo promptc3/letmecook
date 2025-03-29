@@ -3,8 +3,10 @@
 ✔ Show player names with sprite @done(25-03-23 18:44)
 ✔ Adjust multiplayer view to show all players correctly @done(25-03-23 18:44)
 ✔ Move food item generation to server side @done(25-03-23 19:43)
-☐ Add pickup and drop in multiplayer
-☐ Add Dash powerup for player
+✔ Add pickup and drop in multiplayer @done(25-03-29 17:26)
+✔ Add Dash powerup for player @done(25-03-29 17:26)
+✔ Add stun @done(25-03-29 17:34)
+☐ Add game over screen with scoreboard for multiplayer
 
 # All Powerups
 1. Dash

@@ -50,6 +50,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.dashSpeed = 1200;
         this.dashDuration = 800;
         this.lastDashTime = 0;
+        this.isStunned = false;
+        this.stunDuration = 1700;
 
     }
 
@@ -141,6 +143,19 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         onComplete: () => {
             trail.destroy();
         }
+        });
+    }
+
+    handleWallCollision() {
+        if (this.isStunned) return false;
+        if (this.isDashing && !this.isStunned) {
+            this.isStunned = true;
+            this.moveSpeed = 0;
+        }
+        // End dash after duration
+        this.scene.time.delayedCall(this.stunDuration, () => {
+            this.moveSpeed = 200;
+            this.isStunned = false;
         });
     }
 

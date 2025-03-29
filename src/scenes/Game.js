@@ -45,7 +45,7 @@ export class Game extends Phaser.Scene
         // Create player
         this.player = new Player(this, 400, 300, 'player', 16, 16);
         
-        this.physics.add.collider(this.player, this.treeLayer);
+        this.physics.add.collider(this.player, this.treeLayer, this.handleWallCollision);
         this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
         // camera
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
@@ -113,6 +113,10 @@ export class Game extends Phaser.Scene
         this.setupRoomListeners();
     }
 
+    handleWallCollision() {
+        this.player.handleWallCollision();
+        this.dropItem((Math.random()*4) - 1);
+    }
     setupEventListeners() {
         // Listen for the obstacleCollected event from the player
         this.events.on('foodCollected', (pickedItem) => {
@@ -293,41 +297,41 @@ export class Game extends Phaser.Scene
     handleDropZoneEnter(player, zone) {
         const inventorySize = player.inventory.length;
         if (this.checkIngredients()) {
-            for (let i=0; i<inventorySize; i++) {
-                this.dropItem();
-            }
-                this.cameras.main.fadeOut(200, 0, 0, 0);
-                this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+            this.dropItem(inventorySize);
+            this.cameras.main.fadeOut(200, 0, 0, 0);
+            this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
                 this.scene.start('GameOver', {score: Math.round(this.score)});
             });
         }
     }
 
     // Handle dropping the last picked up item
-    dropItem() {
-        if (this.player.inventory.length > 0) {
-            const lastItem = this.player.inventory.pop();
-            console.info(`Dropping ${lastItem.name}`);
-            this.sound.play('drop');
-            
-            if (lastItem instanceof FoodItem) {
-                // Drop the item slightly in front of the player based on rotation
-                const angle = this.player.rotation + Phaser.Math.Angle.Between(0, 0, 500, 500);
-                const distance = this.player.width + 50;
+    dropItem(count) {
+        for (let i = 0; i < count; i++) {
+            if (this.player.inventory.length > 0) {
+                const lastItem = this.player.inventory.pop();
+                console.info(`Dropping ${lastItem.name}`);
+                this.sound.play('drop');
                 
-                const dropX = this.player.x + Math.cos(angle) * distance;
-                const dropY = this.player.y + Math.sin(angle) * distance;
-                
-                lastItem.drop(dropX, dropY);
-                this.displayMessage(`Dropped: ${lastItem.name}`);
-                // Send item drop to server
-                if (this.room) {
-                    this.room.send("itemDrop", {
-                        itemId: lastItem.getId(),
-                        itemName: lastItem.name,
-                        x: dropX,
-                        y: dropY
-                    });
+                if (lastItem instanceof FoodItem) {
+                    // Drop the item slightly in front of the player based on rotation
+                    const angle = this.player.rotation + Phaser.Math.Angle.Between(0, 0, 500, 500);
+                    const distance = this.player.width + 50;
+                    
+                    const dropX = this.player.x + Math.cos(angle) * distance;
+                    const dropY = this.player.y + Math.sin(angle) * distance;
+                    
+                    lastItem.drop(dropX, dropY);
+                    this.displayMessage(`Dropped: ${lastItem.name}`);
+                    // Send item drop to server
+                    if (this.room) {
+                        this.room.send("itemDrop", {
+                            itemId: lastItem.getId(),
+                            itemName: lastItem.name,
+                            x: dropX,
+                            y: dropY
+                        });
+                    }
                 }
             }
         }
@@ -353,7 +357,7 @@ export class Game extends Phaser.Scene
 
         // Check for drop key press
         if (Phaser.Input.Keyboard.JustDown(this.dropKey) && this.player.inventory.length > 0) {
-            this.dropItem();
+            this.dropItem(1);
         }
         if (Phaser.Input.Keyboard.JustDown(this.powerupKey)) {
             this.player.enablePowerUp();
