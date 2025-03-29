@@ -147,7 +147,7 @@ export class Game extends Phaser.Scene
             if (this.room) {
                 this.room.send("powerUpPicked", {
                     playerId: this.room.sessionId,
-                    itemId: pickedItem.getId(),
+                    powerUpId: pickedItem.getId(),
                 });
             }
         });
@@ -229,7 +229,7 @@ export class Game extends Phaser.Scene
             }
         });
 
-        this.room.onMessage("powerUpPicked", (data) => {
+        this.room.onMessage("powerUpPickedUp", (data) => {
             const { playerId, itemId } = data;
 
             console.log(`Power-up picked by player ${playerId}: ${itemId}`);
@@ -289,6 +289,7 @@ export class Game extends Phaser.Scene
         })
         return flag;
     }
+
     handleDropZoneEnter(player, zone) {
         const inventorySize = player.inventory.length;
         if (this.checkIngredients()) {
@@ -362,8 +363,6 @@ export class Game extends Phaser.Scene
                 x: this.player.x,
                 y: this.player.y,
                 rotation: this.player.rotation,
-                velocityX: this.player.body.velocity.x,
-                velocityY: this.player.body.velocity.y
             });
         }
     }

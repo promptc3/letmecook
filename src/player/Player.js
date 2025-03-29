@@ -47,21 +47,15 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
         // Dash properties
         this.isDashing = false;
-        this.dashSpeed = 600;
-        this.dashDuration = 300;
+        this.dashSpeed = 1200;
+        this.dashDuration = 800;
         this.lastDashTime = 0;
 
-         // Visual indicator for dash ability
-        this.dashIndicator = scene.add.sprite(0, -50, 'dash-indicator')
-        .setScale(0.5)
-        .setAlpha(0);
-        this.add(this.dashIndicator);
     }
 
     setName(name) {
         this.name = this.scene.add.text(this.x, this.y, name, { fontSize: '12px', fill: '#000' });
     }
-
 
     setupDangerZoneOverlap(foodItems, powerUps) {
         this.scene.physics.add.overlap(
@@ -99,73 +93,33 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     enablePowerUp() {
+        console.log(`Power-up activated: ${this.activePowerUp}`);
         switch (this.activePowerUp) {
             case 'speedBoost':
                 this.moveSpeed *= 1.5; // Increase speed by 50%
                 break;
             case 'dash':
-                this.enableDash(); // Enable dash ability
+                this.performDash(); // Enable dash ability
                 break;
             default:
                 break;
         }
     }
-     // Call this when player picks up a dash item
-    enableDash() {
-        this.canDash = true;
-        
-        // Show dash indicator
-        this.scene.tweens.add({
-        targets: this.dashIndicator,
-        alpha: 1,
-        y: -40,
-        duration: 300
-        });
-        
-    }
-  
-    disableDash() {
-        this.canDash = false;
-        
-        // Hide dash indicator
-        this.scene.tweens.add({
-        targets: this.dashIndicator,
-        alpha: 0,
-        y: -50,
-        duration: 300
-        });
-        
-        // Clear timer if it exists
-        if (this.dashTimer) this.dashTimer.remove();
-    }
-    performDash(direction) {
+    performDash() {
         // Check if player can dash and cooldown is ready
-        if (!this.canDash || this.isDashing || 
-            (this.scene.time.now - this.lastDashTime < this.dashCooldown)) {
-            return false;
-        }
+        if (this.isDashing) return false;
         
         // Set dashing state
         this.isDashing = true;
-        this.lastDashTime = this.scene.time.now;
-        
-        // Apply dash velocity based on direction
-        const dashVelocity = new Phaser.Math.Vector2(direction).normalize().scale(this.dashSpeed);
-        this.setVelocity(dashVelocity.x, dashVelocity.y);
+        this.moveSpeed = this.dashSpeed;
         
         // Create dash effect
         this.createDashEffect();
         
         // End dash after duration
         this.scene.time.delayedCall(this.dashDuration, () => {
-        this.isDashing = false;
-            // Send dash event to server
-            this.scene.room.send("playerDashed", {
-                x: this.x,
-                y: this.y,
-                vx: this.body.velocity.x,
-                vy: this.body.velocity.y
-            });
+            this.isDashing = false;
+            this.moveSpeed = 200;
         });
         
         return true;
@@ -204,8 +158,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         // Follow cursor with smooth lerping
         const pointer = this.input.activePointer;
         
+        const dx = pointer.worldX - this.x;
+        const dy = pointer.worldY - this.y;
+
+        const angle = Math.atan2(dx, dy);
+        this.setRotation((Math.PI / 2) - angle);
          // Move only if left mouse button is pressed
-        if (pointer.isDown) {
+        if (pointer.isDown || this.isDashing) {
             // Store the clicked position as the target
             this.targetX = pointer.worldX;
             this.targetY = pointer.worldY;
@@ -218,8 +177,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
             // Calculate distance to the target
             const distance = Math.sqrt(dx * dx + dy * dy);
-            const angle = Math.atan2(dx, dy);
-            this.setRotation((Math.PI / 2) - angle);
 
             if (distance > 5) { // Small threshold to stop completely
                 // Decelerate speed as the player nears the target
@@ -236,22 +193,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                 // Stop the player when close enough
                 this.body.velocity.x = Phaser.Math.Linear(this.body.velocity.x, 0, this.lerpFactor * 2);
                 this.body.velocity.y = Phaser.Math.Linear(this.body.velocity.y, 0, this.lerpFactor * 2);
-            }
-        }
-        if (this.canDash) {
-            const cooldownProgress = Math.min(
-                (this.scene.time.now - this.lastDashTime) / this.dashCooldown, 
-                1
-            );
-            
-            // Update dash indicator to show cooldown
-            if (cooldownProgress < 1) {
-                this.dashIndicator.setAlpha(0.5);
-                this.dashIndicator.setTint(0xff0000);
-                this.disableDash();
-            } else {
-                this.dashIndicator.setAlpha(1);
-                this.dashIndicator.setTint(0xffffff);
             }
         }
         this.updateDangerZone();
