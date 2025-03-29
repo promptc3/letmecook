@@ -15,17 +15,6 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
             this.setRandomMovement();
         }
         
-        // Food item states
-        this.states = {
-            RAW: 'raw',
-            PREP: 'prep',
-            COOKING: 'cooking',
-            READY: 'ready'
-        };
-        
-        // Initial state
-        this.state = this.states.RAW;
-        
         // Flag to track if this item has been picked up
         this.isPickedUp = false;
         
@@ -44,6 +33,10 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
         // Generate a unique ID for this food item
         this._id = 'food_' + Math.random().toString(36);
 
+    }
+
+    setId(id) {
+        this._id = id;
     }
 
     getId() {
@@ -69,7 +62,7 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
         }
     }
     // Method to handle being picked up by the player
-    pickup(player) {
+    pickup() {
         if (!this.isPickedUp) {
             this.isPickedUp = true;
             this.body.enable = false;

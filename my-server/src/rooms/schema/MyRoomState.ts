@@ -8,6 +8,12 @@ export class Player extends Schema {
   @type([ "string" ]) inventory: any = [];
 }
 
+export class PowerUp extends Schema {
+  @type("string") id = "";
+  @type("number") x = 0;
+  @type("number") y = 0;
+  @type("string") name = "";
+}
 export class FoodItem extends Schema {
   @type("string") id = "";
   @type("number") x = 0;
@@ -20,4 +26,5 @@ export class FoodItem extends Schema {
 export class MyRoomState extends Schema {
   @type({ map: Player }) players = new MapSchema<Player>();
   @type({ map: FoodItem }) foodItems = new MapSchema<FoodItem>();
+  @type({ map: PowerUp }) powerUps = new MapSchema<PowerUp>();
 }

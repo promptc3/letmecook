@@ -28,7 +28,7 @@ export class Bootloader extends Phaser.Scene {
     this.load.image('background', './../assets/space.png');
     this.load.image('start-button', './../assets/start-button.png');
     this.load.image('player', './../assets/circle-orange.png');
-    this.load.image('food', './../assets/hexagon-blue.png');
+    this.load.image('dash-pickup', './../assets/hexagon-blue.png');
     this.load.image('rabbit', './../assets/hexagon-gray.png');
     this.load.tilemapTiledJSON('map', './../assets/sproutMap.tmj');
     this.load.image('tiles', './../assets/Tilesets/Grass.png');

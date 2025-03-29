@@ -1,5 +1,5 @@
 import { Room, Client } from "@colyseus/core";
-import { MyRoomState, Player, FoodItem } from "./schema/MyRoomState";
+import { MyRoomState, Player, FoodItem, PowerUp } from "./schema/MyRoomState";
 
 interface RecipeIngredient {
   name: string;
@@ -27,7 +27,7 @@ export class MyRoom extends Room<MyRoomState> {
           {name: "Garlic", quantity: "1", texture: "vegetable_garlic"},
           {name: "Ginger", quantity: "3", texture: "vegetable_ginger"},
           {name: "Onion", quantity: "4", texture: "vegetable_onion"}
-]}
+  ]}
   onCreate (options: any) {
     console.log("Game room created", options);
 
@@ -85,11 +85,6 @@ export class MyRoom extends Room<MyRoomState> {
     player.y = Math.floor(Math.random() * 500);
     player.rotation = 0;
     this.state.players.set(client.sessionId, player);
-    // this.generateStaticFood(50, client.sessionId);
-    // client.send("gameState", {
-    //   players: this.state.players,
-    //   foodItems: this.state.foodItems
-    // });
     const vegetables: RecipeIngredient[] = this.recipe.ingredients;
       vegetables.forEach((ing: RecipeIngredient) => {
           const x = Math.random()*this.mapWidth;
@@ -120,6 +115,16 @@ export class MyRoom extends Room<MyRoomState> {
           foodItem.isPickedUp = false;
           foodItem.static = true;
           this.state.foodItems.set(client.sessionId, foodItem);
+    }
+    for(let i=0; i < 20; i++) {
+        const x = Math.random()*this.mapWidth;
+        const y = Math.random()*this.mapHeight;
+        const newPowerUp = new PowerUp();
+        newPowerUp.id = 'powerup_' + Math.random().toString(36);
+        newPowerUp.name = "dash";
+        newPowerUp.x = x;
+        newPowerUp.y = y;
+        this.state.powerUps.set(newPowerUp.id, newPowerUp);
     }
     this.broadcast("playerJoined", { sessionId: client.sessionId, player });
   }

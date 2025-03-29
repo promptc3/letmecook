@@ -1,6 +1,7 @@
 import {Client, getStateCallbacks} from 'colyseus.js';
 import Player from '../player/Player.js';
 import FoodItem from '../foodItems/FoodItem.js';
+import DashPickup from '../pickups/DashPickup.js';
 
 export class Game extends Phaser.Scene
 {
@@ -55,28 +56,13 @@ export class Game extends Phaser.Scene
         this.physics.world.createDebugGraphic();
         // Add key to drop items
         this.dropKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        this.powerupKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
         
         this.foodItems = this.add.group();
+        this.powerUps = this.add.group();
         // Set up player's danger zone to detect food items
-        this.player.setupDangerZoneOverlap(this.foodItems);
-
-        // Listen for the obstacleCollected event from the player
-        this.events.on('foodCollected', (pickedItem, inventory) => {
-            console.log(`Picked ${pickedItem.name}`);
-            this.sound.play('pick');
-            if (pickedItem instanceof FoodItem) {
-                // Handle food item pickup
-                pickedItem.pickup(this.player);
-                let prevQty = this.invHash.get(pickedItem.name);
-                if (prevQty !== undefined || prevQty !== null) {
-                    this.invHash.set(pickedItem.name, prevQty+1);
-                } else {
-                    this.invHash.set(pickedItem.name, 1);
-                }
-                this.displayPickupMessage(pickedItem.name);
-            }
-        });
-
+        this.player.setupDangerZoneOverlap(this.foodItems, this.powerUps);
+        this.setupEventListeners();
         // Create UI text for inventory display
         this.inventoryText = this.add.text(530, 500, 'Inventory Empty', {
             fontSize: '12px',
@@ -85,7 +71,6 @@ export class Game extends Phaser.Scene
         });
         this.inventoryText.setOrigin(0.5);
         this.inventoryText.setScrollFactor(0); // Fix to camera
-        this
         
         // Create UI text for recipe display
         let itemNames = "";
@@ -128,6 +113,45 @@ export class Game extends Phaser.Scene
         this.setupRoomListeners();
     }
 
+    setupEventListeners() {
+        // Listen for the obstacleCollected event from the player
+        this.events.on('foodCollected', (pickedItem) => {
+            console.log(`Picked ${pickedItem.name}`);
+            this.sound.play('pick');
+            if (pickedItem instanceof FoodItem) {
+                // Handle food item pickup
+                pickedItem.pickup()
+                let prevQty = this.invHash.get(pickedItem.name);
+                if (prevQty !== undefined || prevQty !== null) {
+                    this.invHash.set(pickedItem.name, prevQty+1);
+                } else {
+                    this.invHash.set(pickedItem.name, 1);
+                }
+                this.displayPickupMessage(pickedItem.name);
+            }
+            if (this.room) {
+                this.room.send("itemPickup", {
+                    playerId: this.room.sessionId,
+                    itemId: pickedItem.getId(),
+                });
+            }
+        });
+        this.events.on('powerUpCollected', (pickedItem) => {
+            console.log(`Picked ${pickedItem.name}`);
+            this.sound.play('pick');
+            if (pickedItem) {
+                // Handle food item pickup
+                pickedItem.pickup()
+                this.powerUps.remove(pickedItem, true, true);
+            }
+            if (this.room) {
+                this.room.send("powerUpPicked", {
+                    playerId: this.room.sessionId,
+                    itemId: pickedItem.getId(),
+                });
+            }
+        });
+    }
 
     async connectToServer(name) {
         try {
@@ -180,24 +204,46 @@ export class Game extends Phaser.Scene
 
         $(this.room.state).foodItems.onAdd((foodItem, sessionId) => {
             const item = new FoodItem(this, foodItem.x, foodItem.y, foodItem.texture, foodItem.name, foodItem.static ? "static" : "dynamic");
+            item.setId(foodItem.id);
             this.foodItems.add(item);
         });
-        // Listen for food pickup broadcasts from server
+
+        $(this.room.state).powerUps.onAdd((powerUp, sessionId) => {
+            const newPowerup = new DashPickup(this, powerUp.x, powerUp.y);
+            newPowerup.setId(powerUp.id);
+            this.powerUps.add(newPowerup);
+        });
+
         this.room.onMessage("itemPickedUp", (data) => {
-            // Handle remote player picking up an item
-            // Find the food item by ID and remove it from the scene
-            const { itemId, playerId } = data;
-            
-            // Only process if it's not our own pickup
-            if (playerId !== this.room.sessionId) {
-                this.foodItems.getChildren().forEach(item => {
-                    if (item.getId && item.getId() === itemId) {
-                        item.destroy();
-                    }
-                });
+            const { playerId, itemId } = data;
+
+            console.log(`Item picked up by player ${playerId}: ${itemId}`);
+            // Find the item in the foodItems group
+            const pickedItem = this.foodItems.getChildren().find(
+                (item) => item.getId() === itemId
+            );
+            console.log("Picked item: ", pickedItem);
+
+            if (pickedItem) {
+                pickedItem.pickup();
             }
         });
-        
+
+        this.room.onMessage("powerUpPicked", (data) => {
+            const { playerId, itemId } = data;
+
+            console.log(`Power-up picked by player ${playerId}: ${itemId}`);
+            // Find the item in the foodItems group
+            const pickedItem = this.powerUps.getChildren().find(
+                (item) => item.getId() === itemId
+            );
+            console.log("Picked item: ", pickedItem);
+
+            if (pickedItem) {
+                pickedItem.pickup();
+                this.powerUps.remove(pickedItem, true, true);
+            }
+        });
         // Listen for player joined message
         this.room.onMessage("playerJoined", (data) => {
             this.displayMessage(`${data.playerName} joined the game!`);
@@ -254,45 +300,6 @@ export class Game extends Phaser.Scene
                 this.scene.start('GameOver', {score: Math.round(this.score)});
             });
         }
-        
-
-    }
-
-    update(time, delta) {
-        this.player.update();
-        // Update inventory display
-        this.updateInventoryText();
-
-        // Check for drop key press
-        if (Phaser.Input.Keyboard.JustDown(this.dropKey) && this.player.inventory.length > 0) {
-            this.dropItem();
-        }
-        if (this.room && (this.player.body.velocity.x !== 0 || this.player.body.velocity.y !== 0)) {
-            this.room.send("playerMovement", {
-                x: this.player.x,
-                y: this.player.y,
-                rotation: this.player.rotation,
-                velocityX: this.player.body.velocity.x,
-                velocityY: this.player.body.velocity.y
-            });
-        }
-    }
-
-    // Update the inventory display text
-    updateInventoryText() {
-        if (this.player.inventory.length === 0) {
-            this.inventoryText.setText('Inventory Empty');
-        } else {
-            let itemNames = "";
-            this.recipe.ingredients.forEach(ing => {
-                itemNames += `${ing.name}-${this.invHash.get(ing.name)} `;
-            })
-            this.inventoryText.setText(`Current: ${itemNames}`);
-        }
-    }
-    // Display pickup message
-    displayPickupMessage(itemName) {
-        this.displayMessage(`Picked up: ${itemName}`);
     }
 
     // Handle dropping the last picked up item
@@ -305,7 +312,7 @@ export class Game extends Phaser.Scene
             if (lastItem instanceof FoodItem) {
                 // Drop the item slightly in front of the player based on rotation
                 const angle = this.player.rotation + Phaser.Math.Angle.Between(0, 0, 500, 500);
-                const distance = this.player.width + 100;
+                const distance = this.player.width + 50;
                 
                 const dropX = this.player.x + Math.cos(angle) * distance;
                 const dropY = this.player.y + Math.sin(angle) * distance;
@@ -324,6 +331,48 @@ export class Game extends Phaser.Scene
             }
         }
     }
+
+    // Update the inventory display text
+    updateInventoryText() {
+        if (this.player.inventory.length === 0) {
+            this.inventoryText.setText('Inventory Empty');
+        } else {
+            let itemNames = "";
+            this.recipe.ingredients.forEach(ing => {
+                itemNames += `${ing.name}-${this.invHash.get(ing.name)} `;
+            })
+            this.inventoryText.setText(`Current: ${itemNames}`);
+        }
+    }
+
+    update(time, delta) {
+        this.player.update();
+        // Update inventory display
+        this.updateInventoryText();
+
+        // Check for drop key press
+        if (Phaser.Input.Keyboard.JustDown(this.dropKey) && this.player.inventory.length > 0) {
+            this.dropItem();
+        }
+        if (Phaser.Input.Keyboard.JustDown(this.powerupKey)) {
+            this.player.enablePowerUp();
+        }
+        if (this.room && (this.player.body.velocity.x !== 0 || this.player.body.velocity.y !== 0)) {
+            this.room.send("playerMovement", {
+                x: this.player.x,
+                y: this.player.y,
+                rotation: this.player.rotation,
+                velocityX: this.player.body.velocity.x,
+                velocityY: this.player.body.velocity.y
+            });
+        }
+    }
+
+    // Display pickup message
+    displayPickupMessage(itemName) {
+        this.displayMessage(`Picked up: ${itemName}`);
+    }
+
 
     // Generic message display
     displayMessage(text) {
