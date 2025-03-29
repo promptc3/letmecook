@@ -31,8 +31,6 @@ export class MyRoom extends Room<MyRoomState> {
   onCreate (options: any) {
     console.log("Game room created", options);
 
-    // Create food items
-
     this.onMessage("playerMovement", (client, message) => {
       const player = this.state.players.get(client.sessionId);
       if (player) {
@@ -75,6 +73,16 @@ export class MyRoom extends Room<MyRoomState> {
       }
     });
 
+    this.onMessage("powerUpPicked", (client, message) => {
+      const player = this.state.players.get(client.sessionId);
+      if (player) {
+        const powerUp = this.state.powerUps.get(message.powerUpId);
+        if (powerUp) {
+          this.broadcast("powerUpPickedUp", { powerUpId: message.powerUpId, playerId: client.sessionId });
+          this.state.powerUps.delete(message.powerUpId);
+        }
+      }
+    });
   }
 
   onJoin (client: Client, options: any) {
@@ -116,7 +124,7 @@ export class MyRoom extends Room<MyRoomState> {
           foodItem.static = true;
           this.state.foodItems.set(client.sessionId, foodItem);
     }
-    for(let i=0; i < 20; i++) {
+    for(let i=0; i < 10; i++) {
         const x = Math.random()*this.mapWidth;
         const y = Math.random()*this.mapHeight;
         const newPowerUp = new PowerUp();
