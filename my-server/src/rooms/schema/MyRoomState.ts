@@ -9,6 +9,7 @@ export class Player extends Schema {
 }
 
 export class FoodItem extends Schema {
+  @type("string") id = "";
   @type("number") x = 0;
   @type("number") y = 0;
   @type("string") name = "";

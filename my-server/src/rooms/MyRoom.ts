@@ -28,39 +28,6 @@ export class MyRoom extends Room<MyRoomState> {
           {name: "Ginger", quantity: "3", texture: "vegetable_ginger"},
           {name: "Onion", quantity: "4", texture: "vegetable_onion"}
 ]}
-  generateStaticFood(count = 50, clientId: string) {
-      const vegetables: RecipeIngredient[] = this.recipe.ingredients;
-      // create min quantity of each ingredient
-      // vegetables.forEach((ing: RecipeIngredient) => {
-      //     const x = Math.random()*this.mapWidth;
-      //     const y = Math.random()*this.mapHeight;
-      //     const quantity = typeof ing.quantity === 'string' ? parseInt(ing.quantity, 10) : ing.quantity;
-      //     for (let i = 0; i < quantity; i++) {
-      //         const foodItem = new FoodItem();
-      //         foodItem.name = ing.name;
-      //         foodItem.texture = ing.texture;
-      //         foodItem.x = x;
-      //         foodItem.y = y;
-      //         foodItem.isPickedUp = false;
-      //         foodItem.static = true;
-      //         this.state.foodItems.set(clientId, foodItem);
-      //     }
-      // });
-      // add random quantity of random ingredients
-      for(let i=0; i < count; i++) {
-          const x = Math.random()*this.mapWidth;
-          const y = Math.random()*this.mapHeight;
-          const random = Math.floor(Math.random() * vegetables.length);
-          const foodItem = new FoodItem();
-            foodItem.name = vegetables[random].name;
-            foodItem.texture = vegetables[random].texture;
-            foodItem.x = x;
-            foodItem.y = y;
-            foodItem.isPickedUp = false;
-            foodItem.static = true;
-          this.state.foodItems.set(clientId, foodItem);
-      }
-  }
   onCreate (options: any) {
     console.log("Game room created", options);
 
@@ -130,6 +97,7 @@ export class MyRoom extends Room<MyRoomState> {
           const quantity = typeof ing.quantity === 'string' ? parseInt(ing.quantity, 10) : ing.quantity;
           for (let i = 0; i < quantity; i++) {
               const foodItem = new FoodItem();
+              foodItem.id = 'food_' + Math.random().toString(36);
               foodItem.name = ing.name;
               foodItem.texture = ing.texture;
               foodItem.x = x;
@@ -144,6 +112,7 @@ export class MyRoom extends Room<MyRoomState> {
         const y = Math.random()*this.mapHeight;
         const random = Math.floor(Math.random() * vegetables.length);
         const foodItem = new FoodItem();
+          foodItem.id = 'food_' + Math.random().toString(36);
           foodItem.name = vegetables[random].name;
           foodItem.texture = vegetables[random].texture;
           foodItem.x = x;
