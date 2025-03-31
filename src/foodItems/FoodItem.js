@@ -1,8 +1,6 @@
 export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, texture, name = "food", type = "static") {
         super(scene, x, y, texture);
-        this.setDisplaySize(16, 16);
-        this.setScale(2);
         // Add the sprite to the scene
         scene.add.existing(this);
         scene.physics.add.existing(this, type === "static"); // true = static body
@@ -21,17 +19,14 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
         // Store reference to the scene
         this.scene = scene;
         
-        // Enable input for interaction when clicked directly
-        this.setInteractive({ useHandCursor: true })
-            .on('pointerdown', () => {
-                // Only allow direct interaction if not picked up
-                if (!this.isPickedUp) {
-                    this.handleInteraction();
-                }
-        });
-
         // Generate a unique ID for this food item
         this._id = 'food_' + Math.random().toString(36);
+        this.scene.tweens.add({
+            targets: this,
+            duration: 800,
+            yoyo: true,
+            repeat: -1
+        });
 
     }
 

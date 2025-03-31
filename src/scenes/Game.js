@@ -12,10 +12,10 @@ export class Game extends Phaser.Scene
         this.recipe = {
             name: "Veg Curry",
             ingredients: [
-                {name: "Carrot", quantity: "2", texture: "vegetable_carrot"},
+                {name: "Carrot", quantity: "3", texture: "vegetable_carrot"},
                 {name: "Corn", quantity: "1", texture: "vegetable_corn"},
                 {name: "Potato", quantity: "2", texture: "vegetable_potato"},
-                {name: "Garlic", quantity: "1", texture: "vegetable_garlic"},
+                {name: "Garlic", quantity: "4", texture: "vegetable_garlic"},
                 {name: "Ginger", quantity: "2", texture: "vegetable_ginger"},
                 {name: "Onion", quantity: "1", texture: "vegetable_onion"}
 	    ]}
@@ -43,17 +43,17 @@ export class Game extends Phaser.Scene
         this.treeLayer.setCollisionByProperty({collides: true});
         
         // Create player
-        this.player = new Player(this, 400, 300, 'player', 16, 16);
+        this.player = new Player(this, 100, 100, 'player');
         
         this.physics.add.collider(this.player, this.treeLayer, this.handleCollision());
         this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
         // camera
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
         this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
-        this.cameras.main.setZoom(1.8);
+        this.cameras.main.setZoom(3.3);
         this.deceleration = 0.5;
       
-        this.physics.world.createDebugGraphic();
+        // this.physics.world.createDebugGraphic();
         // Add key to drop items
         this.dropKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         this.powerupKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
@@ -117,7 +117,9 @@ export class Game extends Phaser.Scene
         this.playerName.setOrigin(0.5);
         this.playerName.setScrollFactor(0);
         await this.connectToServer(playerName);
-        this.setupRoomListeners();
+        if (this.room) {
+            this.setupRoomListeners();
+        }
     }
 
     handleCollision() {
@@ -296,7 +298,7 @@ export class Game extends Phaser.Scene
         let flag = true;
         this.recipe.ingredients.every(i => {
             const crntQty = this.invHash.get(i.name);
-            if (crntQty !== i.quantity) {
+            if (crntQty < i.quantity) {
                 flag = false;
                 return false;
             } else {
@@ -318,6 +320,8 @@ export class Game extends Phaser.Scene
             this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
                 this.scene.start('GameOver', {score: Math.round(this.player.duration/1000)});
             });
+        } else {
+            this.displayMessage("Not enough ingredients!");
         }
     }
 

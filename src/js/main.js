@@ -9,9 +9,9 @@ const config = {
     type: Phaser.AUTO,
     title: 'LetHimCook',
     parent: 'game-container',
-    width: 1280,
-    height: 720,
-    pixelArt: false,
+    width: window.innerWidth * window.devicePixelRatio,
+    height: window.innerHeight * window.devicePixelRatio,
+    pixelArt: true,
     scene: [
         Bootloader, Start, Game, GameOver
     ],
@@ -23,7 +23,7 @@ const config = {
         default: 'arcade',
         arcade: {
             gravity: { y: 0 },
-            debug: true  // Set to true to see collision boxes
+            debug: false  // Set to true to see collision boxes
         }
     },
 }

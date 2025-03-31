@@ -16,18 +16,20 @@ export class MyRoom extends Room<MyRoomState> {
   maxClients = 4;
   state = new MyRoomState();
 
-  mapWidth = 1280;
-  mapHeight = 720;
+  mapWidth = 2000;
+  mapHeight = 2000;
   recipe: Recipe = {
       name: "Veg Curry",
       ingredients: [
-          {name: "Carrot", quantity: "2", texture: "vegetable_carrot"},
+          {name: "Carrot", quantity: "3", texture: "vegetable_carrot"},
           {name: "Corn", quantity: "1", texture: "vegetable_corn"},
           {name: "Potato", quantity: "2", texture: "vegetable_potato"},
-          {name: "Garlic", quantity: "1", texture: "vegetable_garlic"},
+          {name: "Garlic", quantity: "4", texture: "vegetable_garlic"},
           {name: "Ginger", quantity: "2", texture: "vegetable_ginger"},
           {name: "Onion", quantity: "1", texture: "vegetable_onion"}
   ]}
+  foodItems: FoodItem[] = []; 
+  powerUps: PowerUp[] = [];
   onCreate (options: any) {
     console.log("Game room created", options);
 
@@ -95,16 +97,6 @@ export class MyRoom extends Room<MyRoomState> {
         this.state.scoreBoard.set(client.sessionId, playerScore);
       }
     });
-  }
-
-  onJoin (client: Client, options: any) {
-    console.log(client.sessionId, "joined!");
-    const player = new Player();
-    player.name = options.name;
-    player.x = Math.floor(Math.random() * 800);
-    player.y = Math.floor(Math.random() * 500);
-    player.rotation = 0;
-    this.state.players.set(client.sessionId, player);
     const vegetables: RecipeIngredient[] = this.recipe.ingredients;
       vegetables.forEach((ing: RecipeIngredient) => {
           const x = Math.random()*this.mapWidth;
@@ -119,10 +111,10 @@ export class MyRoom extends Room<MyRoomState> {
               foodItem.y = y;
               foodItem.isPickedUp = false;
               foodItem.static = true;
-              this.state.foodItems.set(client.sessionId, foodItem);
+              this.foodItems.push(foodItem);
           }
       });
-    for(let i=0; i < 50; i++) {
+    for(let i=0; i < 20; i++) {
         const x = Math.random()*this.mapWidth;
         const y = Math.random()*this.mapHeight;
         const random = Math.floor(Math.random() * vegetables.length);
@@ -134,7 +126,7 @@ export class MyRoom extends Room<MyRoomState> {
           foodItem.y = y;
           foodItem.isPickedUp = false;
           foodItem.static = true;
-          this.state.foodItems.set(client.sessionId, foodItem);
+          this.foodItems.push(foodItem);
     }
     for(let i=0; i < 10; i++) {
         const x = Math.random()*this.mapWidth;
@@ -144,9 +136,25 @@ export class MyRoom extends Room<MyRoomState> {
         newPowerUp.name = "dash";
         newPowerUp.x = x;
         newPowerUp.y = y;
-        this.state.powerUps.set(newPowerUp.id, newPowerUp);
+        this.powerUps.push(newPowerUp);
     }
+  }
+
+  onJoin (client: Client, options: any) {
+    console.log(client.sessionId, "joined!");
+    const player = new Player();
+    player.name = options.name;
+    player.x = Math.floor(Math.random() * 800);
+    player.y = Math.floor(Math.random() * 500);
+    player.rotation = 0;
+    this.state.players.set(client.sessionId, player);
     this.broadcast("playerJoined", { sessionId: client.sessionId, player });
+    this.foodItems.forEach((item) => {
+      this.state.foodItems.set(item.id, item);
+    });
+    this.powerUps.forEach((item) => {
+      this.state.powerUps.set(item.id, item);
+    });
   }
 
   onLeave (client: Client, consented: boolean) {
