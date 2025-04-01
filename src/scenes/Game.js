@@ -72,6 +72,13 @@ export class Game extends Phaser.Scene
         this.inventoryText.setOrigin(0.5);
         this.inventoryText.setScrollFactor(0); // Fix to camera
         
+        this.powerUpText = this.add.text(530, 150, `Dash X${this.player.powerUps.length}`, {
+            fontSize: '12px',
+            fill: '#ff0000',
+            align: 'left'
+        });
+        this.powerUpText.setOrigin(0.5);
+        this.powerUpText.setScrollFactor(0); // Fix to camera
         // Create UI text for recipe display
         let itemNames = "";
         this.recipe.ingredients.forEach(ing => {
@@ -155,6 +162,7 @@ export class Game extends Phaser.Scene
             if (pickedItem) {
                 // Handle food item pickup
                 pickedItem.pickup()
+                this.player.activePowerUp = pickedItem;
                 this.powerUps.remove(pickedItem, true, true);
             }
             if (this.room) {

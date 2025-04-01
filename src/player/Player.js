@@ -36,7 +36,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
         // Player's powerups
         this.powerUps = [];
-        this.activePowerUp = this.powerUps[0]?.name || null;
+        this.activePowerUp = this.powerUps[0] || null;
         
         // Store a reference to the input manager
         this.input = scene.input;
@@ -54,7 +54,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.input.hitArea = new Phaser.Geom.Rectangle(0, 0, 32, 48); // Set hit area for the input
         this.setupAnimationsAi(scene);
         this.directionMap = new Map([
-            [0, 'n'], [1, 'ne'], [2, 'e'], [3, 'se'], [4, 's'], [5, 'sw'], [6, 'w'], [7, 'nw']
+            [0, 'w'], [1, 'nw'], [2, 'n'], [3, 'ne'], [4, 'e'], [5, 'se'], [6, 's'], [7, 'sw']
         ]);
     }
 
@@ -159,15 +159,19 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     enablePowerUp() {
         console.log(`Power-up activated: ${this.activePowerUp}`);
-        switch (this.activePowerUp) {
+        switch (this.activePowerUp.name) {
             case 'speedBoost':
                 this.moveSpeed *= 1.5; // Increase speed by 50%
                 break;
             case 'dash':
                 this.performDash(); // Enable dash ability
+                this.powerUps = this.powerUps.filter(powerUp => powerUp.getId() !== this.activePowerUp.getId()); // Remove dash from power-ups
                 break;
             default:
                 break;
+        }
+        if (this.powerUps.length > 0) {
+            this.activePowerUp = this.powerUps[0];
         }
     }
     performDash() {
@@ -239,9 +243,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         const dy = pointer.worldY - this.y;
         const angle = Math.atan2(dy, dx);
         
-        const directions = 7; // Number of directions (e.g., 8 for 8-directional movement)
-        let angleNormalized = ((angle + Math.PI) / (Math.PI * 2)) % 1; // Normalize to 0-1
+        const directions = 8; // Number of directions (e.g., 8 for 8-directional movement)
+        let angleNormalized = ((angle + Math.PI) / (Math.PI * 2)); // Normalize to 0-1
         const directionIndex = Math.floor(angleNormalized * directions);
+        // console.log('Direction Index:', directionIndex);
         const directionKey = this.directionMap.get(directionIndex);
          // Move only if left mouse button is pressed
         if (this.isDashing || pointer.isDown) {
