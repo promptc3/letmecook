@@ -40,9 +40,41 @@ export class Bootloader extends Phaser.Scene {
     fruits.forEach(item => {
         this.load.image(item, `./../assets/food/${item}.png`);
     });
-    this.load.spritesheet('player', './../assets/characters/RunSheet.png', {
+    this.load.spritesheet('orange_player_idle', './../assets/characters/Orange/orange_8direction_standing-Sheet.png', {
       frameWidth: 32,
-      frameHeight: 32
+      frameHeight: 48
+    });
+    this.load.spritesheet('orange_walk_e', './../assets/characters/Orange/orange_walk_EAST-Sheet.png', {
+      frameWidth: 32,
+      frameHeight: 48
+    });
+    this.load.spritesheet('orange_walk_ne', './../assets/characters/Orange/orange_walk_NORTH-EAST-Sheet.png', {
+      frameWidth: 32,
+      frameHeight: 48
+    });
+    this.load.spritesheet('orange_walk_n', './../assets/characters/Orange/orange_walk_NORTH-Sheet.png', {
+      frameWidth: 32,
+      frameHeight: 48
+    });
+    this.load.spritesheet('orange_walk_nw', './../assets/characters/Orange/orange_walk_NORTH-WEST-Sheet.png', {
+      frameWidth: 32,
+      frameHeight: 48
+    });
+    this.load.spritesheet('orange_walk_se', './../assets/characters/Orange/orange_walk_SOUTH-EAST-Sheet.png', {
+      frameWidth: 32,
+      frameHeight: 48
+    });
+    this.load.spritesheet('orange_walk_s', './../assets/characters/Orange/orange_walk_SOUTH-Sheet.png', {
+      frameWidth: 32,
+      frameHeight: 48
+    });
+    this.load.spritesheet('orange_walk_sw', './../assets/characters/Orange/orange_walk_SOUTH-WEST-Sheet.png', {
+      frameWidth: 32,
+      frameHeight: 48
+    });
+    this.load.spritesheet('orange_walk_w', './../assets/characters/Orange/orange_walk_WEST-Sheet.png', {
+      frameWidth: 32,
+      frameHeight: 48
     });
   }
 

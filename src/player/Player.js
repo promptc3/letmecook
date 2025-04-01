@@ -1,20 +1,22 @@
 export default class Player extends Phaser.Physics.Arcade.Sprite {
-    constructor(scene, x, y, texture) {
-        super(scene, x, y, texture);
+    constructor(scene, x, y) {
+        super(scene, x, y);
         
         // Add this sprite to the scene
         scene.add.existing(this);
 
-        this.setScale(0.5);
         const spriteHeight = this.height * this.scaleY;
 
         // Enable physics on this sprite
         scene.physics.add.existing(this);
+        this.scene.physics.world.enable(this);
+        // this.setSize(32, 48);
         
         // Set up physics body properties
         const radius = spriteHeight/2;
         
         // this.body.setCircle(radius, 0, 0);
+        this.body.setSize(32, 48);
         // this.body.setGravity(false);
         // this.body.setCollideWorldBounds(false); 
         
@@ -49,65 +51,75 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.lastDashTime = 0;
         this.isStunned = false;
         this.stunDuration = 1700;
-        // this.setFrame(0); // Set a valid initial frame
-        // this.play('idle'); // Start with idle animation
+        this.input.hitArea = new Phaser.Geom.Rectangle(0, 0, 32, 48); // Set hit area for the input
         this.setupAnimationsAi(scene);
-
+        this.directionMap = new Map([
+            [0, 'n'], [1, 'ne'], [2, 'e'], [3, 'se'], [4, 's'], [5, 'sw'], [6, 'w'], [7, 'nw']
+        ]);
     }
 
     setupAnimationsAi(scene) {
-        // Create running animation (assuming each frame is 64x64)
-        scene.anims.create({
-            key: 'run',
-            frames: scene.anims.generateFrameNumbers('player', { start: 0, end: 7 }), // Adjust frame range
-            frameRate: 10,
-            repeat: -1
-        });
-
+        const frameRate = 10;
+        const repeat = -1;
         scene.anims.create({
             key: 'idle',
-            frames: [{ key: 'player', frame: 0 }],
-            frameRate: 1
+            frames: scene.anims.generateFrameNumbers('orange_player_idle', { start: 0, end: 7 }),
+            frameRate: frameRate,
+            repeat: repeat
         });
+        scene.anims.create({
+            key: 'walk_n',
+            frames: scene.anims.generateFrameNumbers('orange_walk_n', { start: 0, end: 7 }),
+            frameRate: frameRate,
+            repeat: repeat
+        });
+        scene.anims.create({
+            key: 'walk_e',
+            frames: scene.anims.generateFrameNumbers('orange_walk_e', { start: 0, end: 7 }),
+            frameRate: frameRate,
+            repeat: repeat
+        });
+        scene.anims.create({
+            key: 'walk_w',
+            frames: scene.anims.generateFrameNumbers('orange_walk_w', { start: 0, end: 7 }),
+            frameRate: frameRate,
+            repeat: repeat
+        });
+        scene.anims.create({
+            key: 'walk_s',
+            frames: scene.anims.generateFrameNumbers('orange_walk_s', { start: 0, end: 7 }),
+            frameRate: frameRate,
+            repeat: repeat
+        });
+        scene.anims.create({
+            key: 'walk_ne',
+            frames: scene.anims.generateFrameNumbers('orange_walk_ne', { start: 0, end: 7 }),
+            frameRate: frameRate,
+            repeat: repeat
+        });
+        scene.anims.create({
+            key: 'walk_nw',
+            frames: scene.anims.generateFrameNumbers('orange_walk_nw', { start: 0, end: 7 }),
+            frameRate: frameRate,
+            repeat: repeat
+        });
+        scene.anims.create({
+            key: 'walk_se',
+            frames: scene.anims.generateFrameNumbers('orange_walk_se', { start: 0, end: 7 }),
+            frameRate: frameRate,
+            repeat: repeat
+        });
+        scene.anims.create({
+            key: 'walk_sw',
+            frames: scene.anims.generateFrameNumbers('orange_walk_sw', { start: 0, end: 7 }),
+            frameRate: frameRate,
+            repeat: repeat
+        });
+        this.anims.play('idle', true);
     }
-    setupAnimations() {
-        const frameRate = 5;
-        const repeat = -1; // Loop infinitely
-        
-        // Looking at your spritesheet, it appears to have 8 rows of character frames
-        // Each row seems to represent a different direction
-        const directions = 8;
-        
-        // For each direction, create an idle and move animation
-        for (let i = 0; i < directions; i++) {
-            // Assuming your spritesheet has 8 frames per row
-            // and the first 4 are for idle, last 4 are for movement
-            
-            // Create idle animation for this direction
-            this.scene.anims.create({
-                key: `idle_${i}`,
-                frames: this.scene.anims.generateFrameNumbers(this.texture.key, { 
-                    start: i * 8, 
-                    end: i * 8 + 2 
-                }),
-                frameRate: frameRate,
-                repeat: repeat
-            });
-            
-            // Create movement animation for this direction
-            this.scene.anims.create({
-                key: `move_${i}`,
-                frames: this.scene.anims.generateFrameNumbers(this.texture.key, { 
-                    start: i * 8 + 3, 
-                    end: i * 8 + 7 
-                }),
-                frameRate: frameRate,
-                repeat: repeat
-            });
-        }
-    }
+
     setName(name) {
-        this.name = this.scene.add.text(this.x, this.y, name, { fontSize: '12px', fill: '#000' });
+        this.name = this.scene.add.text(this.x, this.y, name, { fontSize: '9px', fill: '#000' });
     }
 
     setupDangerZoneOverlap(foodItems, powerUps) {
@@ -223,15 +235,16 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     update() {
         // Follow cursor with smooth lerping
         const pointer = this.input.activePointer;
-        
         const dx = pointer.worldX - this.x;
         const dy = pointer.worldY - this.y;
-
-        const angle = Math.atan2(dx, dy);
-        this.setRotation((Math.PI / 2) - angle);
+        const angle = Math.atan2(dy, dx);
         
+        const directions = 7; // Number of directions (e.g., 8 for 8-directional movement)
+        let angleNormalized = ((angle + Math.PI) / (Math.PI * 2)) % 1; // Normalize to 0-1
+        const directionIndex = Math.floor(angleNormalized * directions);
+        const directionKey = this.directionMap.get(directionIndex);
          // Move only if left mouse button is pressed
-        if (pointer.isDown || this.isDashing) {
+        if (this.isDashing || pointer.isDown) {
             // Store the clicked position as the target
             this.targetX = pointer.worldX;
             this.targetY = pointer.worldY;
@@ -256,18 +269,16 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                 // Smooth movement using linear interpolation (lerp)
                 this.body.velocity.x = Phaser.Math.Linear(this.body.velocity.x, speedX, this.lerpFactor);
                 this.body.velocity.y = Phaser.Math.Linear(this.body.velocity.y, speedY, this.lerpFactor);
-                console.log('Current Animation:', this.anims.currentAnim ? this.anims.currentAnim.key : 'None');
-                console.log('Run Animation Exists:', this.scene.anims.exists('run'));
-                console.log('Animation Keys:', this.anims.animationManager.anims.keys());
-                // if (this.anims.currentAnim?.key !== 'run') {
-                //     this.anims.stop(); // Stop any existing animation
-                //     this.anims.play('run', true);
-                // }
+                // console.log('Current Animation:', this.anims.currentAnim ? this.anims.currentAnim.key : 'None');
+                // console.log('Run Animation Exists:', this.scene.anims.exists('run'));
+                // console.log('Animation Keys:', this.anims.animationManager.anims.keys());
+                this.anims.play(`walk_${directionKey}`, true);
             } else {
                 // Stop the player when close enough
                 this.body.velocity.x = Phaser.Math.Linear(this.body.velocity.x, 0, this.lerpFactor * 2);
                 this.body.velocity.y = Phaser.Math.Linear(this.body.velocity.y, 0, this.lerpFactor * 2);
-                this.play('idle', true);
+                this.setFrame('idle', directionIndex);
+                // this.play('idle', true);
             }
         }
         this.updateDangerZone();

@@ -43,8 +43,8 @@ export class Game extends Phaser.Scene
         this.treeLayer.setCollisionByProperty({collides: true});
         
         // Create player
-        this.player = new Player(this, 100, 100, 'player');
-        
+        this.player = new Player(this, 100, 100);
+        this.player.setSizeToFrame(this.textures.get('player').frames[0]);
         this.physics.add.collider(this.player, this.treeLayer, this.handleCollision());
         this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
         // camera
