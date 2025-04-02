@@ -10,7 +10,6 @@ export class GameOver extends Phaser.Scene {
 
     preload() {
         // Load assets for game over screen
-        this.load.image('game-over-bg', '../assets/space.png');
         this.load.image('retry-button', '../assets/retry-button.png');
     }
 

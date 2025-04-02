@@ -21,7 +21,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         // this.body.setCollideWorldBounds(false); 
         
         // Movement properties
-        this.moveSpeed = 200;
+        this.moveSpeed = 400;
         this.lerpFactor = 0.10; // Controls how smoothly the player follows the cursor (0-1)
 
         // danger zone (2x the radius of the player)
@@ -36,7 +36,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
         // Player's powerups
         this.powerUps = [];
-        this.activePowerUp = this.powerUps[0] || null;
+        this.activePowerUp = undefined;
         
         // Store a reference to the input manager
         this.input = scene.input;
@@ -48,17 +48,27 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.isDashing = false;
         this.dashSpeed = 1200;
         this.dashDuration = 800;
-        this.lastDashTime = 0;
+        this.dashStart = undefined;
         this.isStunned = false;
         this.stunDuration = 1700;
         this.input.hitArea = new Phaser.Geom.Rectangle(0, 0, 32, 48); // Set hit area for the input
-        this.setupAnimationsAi(scene);
+        this.setupAnimations(scene);
         this.directionMap = new Map([
             [0, 'w'], [1, 'nw'], [2, 'n'], [3, 'ne'], [4, 'e'], [5, 'se'], [6, 's'], [7, 'sw']
         ]);
+        scene.time.addEvent({
+            delay: 1000, // 1 second
+            callback: () => {
+                if (this.isPlaying) {
+                    this.duration += 1;
+                    console.log(`Time Played: ${this.duration}s`);
+                }
+            },
+            loop: true
+        });
     }
 
-    setupAnimationsAi(scene) {
+    setupAnimations(scene) {
         const frameRate = 10;
         const repeat = -1;
         scene.anims.create({
@@ -119,7 +129,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     setName(name) {
-        this.name = this.scene.add.text(this.x, this.y, name, { fontSize: '9px', fill: '#000' });
+        this.name = this.scene.add.text(this.x, this.y, `${this.isStunned ? name+"::Stunned" : name}`, { fontSize: '9px', fill: '#000' });
     }
 
     setupDangerZoneOverlap(foodItems, powerUps) {
@@ -153,12 +163,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             this.powerUps.push(powerUp);
             console.log(`Collected power-up: ${powerUp.name || 'unnamed powerUp'}`);
             this.scene.events.emit('powerUpCollected', powerUp);
-            this.activePowerUp = powerUp.name;
+            this.activePowerUp = powerUp;
         }
     }
 
     enablePowerUp() {
-        console.log(`Power-up activated: ${this.activePowerUp}`);
+        console.log("Power-up activated:", this.activePowerUp);
+        if (this.activePowerUp === null || this.activePowerUp === undefined) return;
         switch (this.activePowerUp.name) {
             case 'speedBoost':
                 this.moveSpeed *= 1.5; // Increase speed by 50%
@@ -172,25 +183,16 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         }
         if (this.powerUps.length > 0) {
             this.activePowerUp = this.powerUps[0];
+        } else {
+            this.activePowerUp = null;
         }
     }
     performDash() {
-        // Check if player can dash and cooldown is ready
+        // this.moveSpeed = this.dashSpeed;
         if (this.isDashing) return false;
         
-        // Set dashing state
         this.isDashing = true;
         this.moveSpeed = this.dashSpeed;
-        
-        // Create dash effect
-        this.createDashEffect();
-        
-        // End dash after duration
-        this.scene.time.delayedCall(this.dashDuration, () => {
-            this.isDashing = false;
-            this.moveSpeed = 200;
-        });
-        
         return true;
     }
   
@@ -214,14 +216,18 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     handleCollision() {
+        console.log('Collision detected!', 'Stunned: ', this.isStunned, 'Dashing: ', this.isDashing);
         if (this.isStunned) return false;
         if (this.isDashing && !this.isStunned) {
+            console.log('Stunned!');
             this.isStunned = true;
             this.moveSpeed = 0;
+            this.body.setVelocity(0, 0);
+            this.scene.events.emit('playerStunned', Math.random()*3 + 1);
         }
         // End dash after duration
         this.scene.time.delayedCall(this.stunDuration, () => {
-            this.moveSpeed = 200;
+            this.moveSpeed = 400;
             this.isStunned = false;
         });
     }
@@ -249,10 +255,24 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         // console.log('Direction Index:', directionIndex);
         const directionKey = this.directionMap.get(directionIndex);
          // Move only if left mouse button is pressed
-        if (this.isDashing || pointer.isDown) {
+        if (pointer.isDown) {
             // Store the clicked position as the target
             this.targetX = pointer.worldX;
             this.targetY = pointer.worldY;
+            if (this.isDashing) {
+                // console.log('Dashing!', this.moveSpeed);
+                this.dashStart = this.scene.time.now;
+                this.createDashEffect();
+            }
+        }
+        
+        if (this.scene.time.now - this.dashStart > this.dashDuration) {
+            this.body.setVelocity(0, 0);
+            this.targetX = undefined;
+            this.targetY = undefined;
+            this.dashStart = undefined;
+            this.moveSpeed = 400;
+            this.isDashing = false;
         }
 
         if (this.targetX !== undefined && this.targetY !== undefined) {
@@ -263,13 +283,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             // Calculate distance to the target
             const distance = Math.sqrt(dx * dx + dy * dy);
 
-            if (distance > 5) { // Small threshold to stop completely
+            if (distance > 40) { // Small threshold to stop completely
                 // Decelerate speed as the player nears the target
-                const decelerationFactor = Phaser.Math.Clamp(distance / 100, 0.1, 1); // Scales speed based on distance
+                // const decelerationFactor = Phaser.Math.Clamp(distance / 100, 0.1, 0.5); // Scales speed based on distance
                 
                 // Normalize direction and apply movement speed with deceleration
-                const speedX = (dx / distance) * this.moveSpeed * decelerationFactor;
-                const speedY = (dy / distance) * this.moveSpeed * decelerationFactor;
+                const speedX = (dx / distance) * this.moveSpeed ;
+                const speedY = (dy / distance) * this.moveSpeed ;
                 
                 // Smooth movement using linear interpolation (lerp)
                 this.body.velocity.x = Phaser.Math.Linear(this.body.velocity.x, speedX, this.lerpFactor);
@@ -282,15 +302,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                 // Stop the player when close enough
                 this.body.velocity.x = Phaser.Math.Linear(this.body.velocity.x, 0, this.lerpFactor * 2);
                 this.body.velocity.y = Phaser.Math.Linear(this.body.velocity.y, 0, this.lerpFactor * 2);
-                this.setFrame('idle', directionIndex);
+                this.setFrame(0);
                 // this.play('idle', true);
             }
         }
         this.updateDangerZone();
         this.updateText();
         // update playing duration
-        if (this.isPlaying) {
-            this.duration = this.scene.time.now - this.scene.startTime;
-        }
+
     }
 }

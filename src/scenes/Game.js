@@ -45,12 +45,12 @@ export class Game extends Phaser.Scene
         // Create player
         this.player = new Player(this, 100, 100);
         this.player.setSizeToFrame(this.textures.get('player').frames[0]);
-        this.physics.add.collider(this.player, this.treeLayer, this.handleCollision());
+        this.physics.add.collider(this.player, this.treeLayer, this.handleCollision, null, this);
         this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
         // camera
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
         this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
-        this.cameras.main.setZoom(3.3);
+        this.cameras.main.setZoom(1.0);
         this.deceleration = 0.5;
       
         // this.physics.world.createDebugGraphic();
@@ -64,16 +64,16 @@ export class Game extends Phaser.Scene
         this.player.setupDangerZoneOverlap(this.foodItems, this.powerUps);
         this.setupEventListeners();
         // Create UI text for inventory display
-        this.inventoryText = this.add.text(530, 500, 'Inventory Empty', {
-            fontSize: '12px',
+        this.inventoryText = this.add.text(500, 500, 'Inventory Empty', {
+            fontSize: '9px',
             fill: '#ff0000',
             align: 'left'
         });
         this.inventoryText.setOrigin(0.5);
         this.inventoryText.setScrollFactor(0); // Fix to camera
         
-        this.powerUpText = this.add.text(530, 150, `Dash X${this.player.powerUps.length}`, {
-            fontSize: '12px',
+        this.powerUpText = this.add.text(400, 300, `Dash x${this.player.powerUps.length}`, {
+            fontSize: '9px',
             fill: '#ff0000',
             align: 'left'
         });
@@ -85,7 +85,7 @@ export class Game extends Phaser.Scene
             itemNames += `${ing.name}-${ing.quantity} `;
         })
         this.goalText = this.add.text(530, 520, `Goal: ${itemNames}`, {
-            fontSize: '12px',
+            fontSize: '9px',
             fill: '#ff0000',
             align: 'left'
         });
@@ -93,13 +93,13 @@ export class Game extends Phaser.Scene
         this.goalText.setScrollFactor(0); // Fix to camera
         // Create interaction message
         this.messageText = this.add.text(400, 550, '', {
-            fontSize: '18px',
+            fontSize: '9px',
             fill: '#ffffff'
         });
         this.messageText.setOrigin(0.5);
         this.messageText.setScrollFactor(0);
         // Create the circular drop zone
-        this.createDropZone(1200, 700, 100); // x, y, radius
+        this.createDropZone(500, 700, 50); // x, y, radius
         
         // Connection status text
         this.connectionText = this.add.text(400, 20, 'Connecting...', {
@@ -131,8 +131,8 @@ export class Game extends Phaser.Scene
 
     handleCollision() {
         this.player.handleCollision();
-        this.dropItem((Math.random()*4) - 1);
     }
+
     setupEventListeners() {
         // Listen for the obstacleCollected event from the player
         this.events.on('foodCollected', (pickedItem) => {
@@ -162,8 +162,8 @@ export class Game extends Phaser.Scene
             if (pickedItem) {
                 // Handle food item pickup
                 pickedItem.pickup()
-                this.player.activePowerUp = pickedItem;
                 this.powerUps.remove(pickedItem, true, true);
+                this.updateDashText();
             }
             if (this.room) {
                 this.room.send("powerUpPicked", {
@@ -172,6 +172,9 @@ export class Game extends Phaser.Scene
                 });
             }
         });
+        this.events.on('playerStunned', (dropItemCount) => {
+          this.dropItem(dropItemCount);   
+        })
     }
 
     async connectToServer(name) {
@@ -254,6 +257,16 @@ export class Game extends Phaser.Scene
                 pickedItem.pickup();
             }
         });
+        
+        this.room.onMessage("itemDropped", (data) => {
+            const { itemId, playerId, x, y } = data;
+            const dropppedItem = this.foodItems.getChildren().find(
+                (item) => item.getId() === itemId
+            );
+            if (dropppedItem && playerId === this.room.sessionId) {
+                dropppedItem.drop(x, y);
+            }
+        });
 
         this.room.onMessage("powerUpPickedUp", (data) => {
             const { playerId, itemId } = data;
@@ -287,6 +300,8 @@ export class Game extends Phaser.Scene
         
         // Set up the physics body for the zone
         this.physics.world.enable(this.dropZone, Phaser.Physics.Arcade.STATIC_BODY);
+        const graphics = this.add.graphics({ lineStyle: { width: 5, color: 0xa41fe0 } })
+        graphics.strokeCircle(x, y, radius);
         
         // Make the zone's physics body circular
         this.dropZone.body.setCircle(radius);
@@ -319,6 +334,7 @@ export class Game extends Phaser.Scene
     handleDropZoneEnter(player, zone) {
         if (this.checkIngredients()) {
             this.player.isPlaying = false;
+            console.log("Cooking finished in ", this.player.duration, " seconds");
             this.room.send("playerFinished", {
                 playerId: this.room.sessionId,
                 playerName: this.player.name,
@@ -365,6 +381,9 @@ export class Game extends Phaser.Scene
         }
     }
 
+    updateDashText() {
+        this.powerUpText.setText(`Dash x${this.player.powerUps.length}`);
+    }
     // Update the inventory display text
     updateInventoryText() {
         if (this.player.inventory.length === 0) {
@@ -396,6 +415,7 @@ export class Game extends Phaser.Scene
         }
         if (Phaser.Input.Keyboard.JustDown(this.powerupKey)) {
             this.player.enablePowerUp();
+            this.updateDashText();
         }
         if (this.room && (this.player.body.velocity.x !== 0 || this.player.body.velocity.y !== 0)) {
             this.room.send("playerMovement", {
