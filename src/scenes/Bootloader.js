@@ -81,6 +81,8 @@ export class Bootloader extends Phaser.Scene {
   loadSounds() {
     this.load.audio('pick', './../assets/sounds/pick.ogg');
     this.load.audio('drop', './../assets/sounds/drop.ogg');
+    this.load.audio('footstep1', './../assets/sounds/footstep_1.ogg');
+    this.load.audio('footstep2', './../assets/sounds/footstep_2.ogg');
   }
   createProgressBar() {
     this.loadBar = this.add.graphics();

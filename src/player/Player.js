@@ -61,11 +61,26 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             callback: () => {
                 if (this.isPlaying) {
                     this.duration += 1;
-                    console.log(`Time Played: ${this.duration}s`);
+                    // console.log(`Time Played: ${this.duration}s`);
                 }
             },
             loop: true
         });
+        this.setupFootstepSounds(scene);
+    }
+
+    setupFootstepSounds(scene) {
+        const s1 = scene.sound.add('footstep1', { volume: 0.3 });
+        const s2 = scene.sound.add('footstep2', { volume: 0.3 });
+        this.footstepSounds = [s1, s2];
+        this.currentFootstep = 0;
+        this.walkTimer = scene.time.addEvent({
+            delay: 300, // Adjust to match step timing
+            callback: this.playFootstep,
+            callbackScope: this,
+            loop: true
+        });
+        this.walkTimer.paused = true; 
     }
 
     setupAnimations(scene) {
@@ -217,19 +232,27 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     handleCollision() {
         console.log('Collision detected!', 'Stunned: ', this.isStunned, 'Dashing: ', this.isDashing);
-        if (this.isStunned) return false;
         if (this.isDashing && !this.isStunned) {
             console.log('Stunned!');
             this.isStunned = true;
             this.moveSpeed = 0;
             this.body.setVelocity(0, 0);
             this.scene.events.emit('playerStunned', Math.random()*3 + 1);
+            // End dash after duration
+            this.scene.time.delayedCall(this.stunDuration, () => {
+                this.moveSpeed = 400;
+                this.isStunned = false;
+            });
+        } else {
+            // console.log('stopping');
+            this.body.setVelocity(0, 0);
+            this.walkTimer.paused = true;
         }
-        // End dash after duration
-        this.scene.time.delayedCall(this.stunDuration, () => {
-            this.moveSpeed = 400;
-            this.isStunned = false;
-        });
+    }
+
+    playFootstep() {
+        this.footstepSounds[this.currentFootstep].play();
+        this.currentFootstep = (this.currentFootstep + 1) % this.footstepSounds.length; // Toggle between 0 and 1
     }
 
     updateDangerZone() {
@@ -298,11 +321,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                 // console.log('Run Animation Exists:', this.scene.anims.exists('run'));
                 // console.log('Animation Keys:', this.anims.animationManager.anims.keys());
                 this.anims.play(`walk_${directionKey}`, true);
+                this.walkTimer.paused = false; 
             } else {
                 // Stop the player when close enough
                 this.body.velocity.x = Phaser.Math.Linear(this.body.velocity.x, 0, this.lerpFactor * 2);
                 this.body.velocity.y = Phaser.Math.Linear(this.body.velocity.y, 0, this.lerpFactor * 2);
                 this.setFrame(0);
+                this.walkTimer.paused = true; 
                 // this.play('idle', true);
             }
         }
