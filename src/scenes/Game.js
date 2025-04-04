@@ -30,6 +30,11 @@ export class Game extends Phaser.Scene
 
     async create()
     {
+        const leftText = this.cameras.main.worldView.x + this.cameras.main.width / 2 - 200;
+        const centerTextX = this.cameras.main.worldView.x + this.cameras.main.width / 2;
+        const rightText = this.cameras.main.worldView.x - 10 + this.cameras.main.width;
+        const topText = this.cameras.main.worldView.y + this.cameras.main.height / 2 - 110;
+        const bottomText = this.cameras.main.worldView.y + this.cameras.main.height / 2 + 110;
         try {
             this.map = this.make.tilemap({ key: 'map'});
             console.log("Map loaded.", this.map);
@@ -50,7 +55,7 @@ export class Game extends Phaser.Scene
         // camera
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
         this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
-        this.cameras.main.setZoom(1.0);
+        this.cameras.main.setZoom(3.0);
         this.deceleration = 0.5;
       
         // this.physics.world.createDebugGraphic();
@@ -64,7 +69,7 @@ export class Game extends Phaser.Scene
         this.player.setupDangerZoneOverlap(this.foodItems, this.powerUps);
         this.setupEventListeners();
         // Create UI text for inventory display
-        this.inventoryText = this.add.text(500, 500, 'Inventory Empty', {
+        this.inventoryText = this.add.text(leftText, bottomText + 10, 'Inventory Empty', {
             fontSize: '9px',
             fill: '#ff0000',
             align: 'left'
@@ -72,7 +77,7 @@ export class Game extends Phaser.Scene
         this.inventoryText.setOrigin(0.5);
         this.inventoryText.setScrollFactor(0); // Fix to camera
         
-        this.powerUpText = this.add.text(400, 300, `Dash x${this.player.powerUps.length}`, {
+        this.powerUpText = this.add.text(leftText, topText, `Dash x${this.player.powerUps.length}`, {
             fontSize: '9px',
             fill: '#ff0000',
             align: 'left'
@@ -84,7 +89,7 @@ export class Game extends Phaser.Scene
         this.recipe.ingredients.forEach(ing => {
             itemNames += `${ing.name}-${ing.quantity} `;
         })
-        this.goalText = this.add.text(530, 520, `Goal: ${itemNames}`, {
+        this.goalText = this.add.text(leftText, bottomText, `Goal: ${itemNames}`, {
             fontSize: '9px',
             fill: '#ff0000',
             align: 'left'
@@ -92,7 +97,7 @@ export class Game extends Phaser.Scene
         this.goalText.setOrigin(0.5);
         this.goalText.setScrollFactor(0); // Fix to camera
         // Create interaction message
-        this.messageText = this.add.text(400, 550, '', {
+        this.messageText = this.add.text(rightText, bottomText, '', {
             fontSize: '9px',
             fill: '#ffffff'
         });
@@ -102,14 +107,14 @@ export class Game extends Phaser.Scene
         this.createDropZone(500, 700, 50); // x, y, radius
         
         // Connection status text
-        this.connectionText = this.add.text(400, 20, 'Connecting...', {
-            fontSize: '18px',
+        this.connectionText = this.add.text(centerTextX, topText, 'Connecting...', {
+            fontSize: '9px',
             fill: '#ffffff'
         });
         this.connectionText.setOrigin(0.5);
         this.connectionText.setScrollFactor(0);
-        this.scoreBoardText = this.add.text(100, 20, '', {
-            fontSize: '18px',
+        this.scoreBoardText = this.add.text(rightText, topText, '', {
+            fontSize: '9px',
             fill: '#ffffff',
             backgroundColor: '#000000'
         });
@@ -338,11 +343,12 @@ export class Game extends Phaser.Scene
             this.room.send("playerFinished", {
                 playerId: this.room.sessionId,
                 playerName: this.player.name,
-                playDuration: Math.round(this.player.duration/1000),
+                playDuration: Math.round(this.player.duration),
             });
+            this.physics.world.disable(zone);
             this.cameras.main.fadeOut(200, 0, 0, 0);
             this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
-                this.scene.start('GameOver', {score: Math.round(this.player.duration/1000)});
+                this.scene.start('GameOver', {score: Math.round(this.player.duration)});
             });
         } else {
             this.displayMessage("Not enough ingredients!");

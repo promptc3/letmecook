@@ -12,9 +12,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.scene.physics.world.enable(this);
         // this.setSize(32, 48);
         
-        // Set up physics body properties
-        const radius = spriteHeight/2;
-        
         // this.body.setCircle(radius, 0, 0);
         this.body.setSize(32, 48);
         // this.body.setGravity(false);
@@ -25,7 +22,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.lerpFactor = 0.10; // Controls how smoothly the player follows the cursor (0-1)
 
         // danger zone (2x the radius of the player)
-        this.dangerZone = scene.add.circle(x, y, radius * 2, 0xff0000, 0.2);
+        this.dangerZone = scene.add.rectangle(x, y, 32, 48);
         scene.physics.add.existing(this.dangerZone, false); // false = non-static body
         
         // Make danger zone not collide with anything physically
@@ -306,13 +303,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             // Calculate distance to the target
             const distance = Math.sqrt(dx * dx + dy * dy);
 
-            if (distance > 40) { // Small threshold to stop completely
+            if (distance > 1) { // Small threshold to stop completely
                 // Decelerate speed as the player nears the target
-                // const decelerationFactor = Phaser.Math.Clamp(distance / 100, 0.1, 0.5); // Scales speed based on distance
+                const decelerationFactor = Phaser.Math.Clamp(distance / 100, 0.1, 1);
                 
                 // Normalize direction and apply movement speed with deceleration
-                const speedX = (dx / distance) * this.moveSpeed ;
-                const speedY = (dy / distance) * this.moveSpeed ;
+                const speedX = (dx / distance) * this.moveSpeed * decelerationFactor;
+                const speedY = (dy / distance) * this.moveSpeed * decelerationFactor;
                 
                 // Smooth movement using linear interpolation (lerp)
                 this.body.velocity.x = Phaser.Math.Linear(this.body.velocity.x, speedX, this.lerpFactor);

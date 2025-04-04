@@ -8,21 +8,16 @@ export class GameOver extends Phaser.Scene {
         this.score = data.score || 0;
     }
 
-    preload() {
-        // Load assets for game over screen
-        this.load.image('retry-button', '../assets/retry-button.png');
-    }
-
     create() {
-        // Add background
-        this.add.image(400, 300, 'game-over-bg');
         
+        const textStart = this.cameras.main.width / 2;
         // Add game over text
-        this.add.text(400, 150, 'GAME OVER', {
+        this.add.text(textStart, 150, 'GAME OVER', {
             fontFamily: 'Arial',
             fontSize: 64,
             color: '#ff0000',
             fontStyle: 'bold',
+            align: 'center',
             shadow: {
                 offsetX: 2,
                 offsetY: 2,
@@ -34,17 +29,19 @@ export class GameOver extends Phaser.Scene {
         }).setOrigin(0.5);
         
         // Display final score
-        this.add.text(400, 250, `SCORE: ${this.score}`, {
+        this.add.text(textStart, 250, `SCORE: ${this.score}`, {
             fontFamily: 'Arial',
             fontSize: 32,
-            color: '#ffffff'
+            color: '#ffffff',
+            align: 'center',
         }).setOrigin(0.5);
         
         // Add retry button
-        const retryButton = this.add.image(500, 350, 'retry-button')
+        const retryButton = this.add.image(textStart, 350, 'retry-button')
+            .setScale(0.4)
             .setInteractive({ useHandCursor: true })
-            .on('pointerover', () => retryButton.setScale(1.0))
-            .on('pointerout', () => retryButton.setScale(0.9))
+            .on('pointerover', () => retryButton.setScale(0.6))
+            .on('pointerout', () => retryButton.setScale(0.4))
             .on('pointerdown', () => this.retryGame());
     }
     
