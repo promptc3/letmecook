@@ -18,7 +18,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         // this.body.setCollideWorldBounds(false); 
         
         // Movement properties
-        this.moveSpeed = 400;
+        this.moveSpeed = 200;
         this.lerpFactor = 0.10; // Controls how smoothly the player follows the cursor (0-1)
 
         // danger zone (2x the radius of the player)
@@ -263,74 +263,81 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     update() {
-        // Follow cursor with smooth lerping
         const pointer = this.input.activePointer;
-        const dx = pointer.worldX - this.x;
-        const dy = pointer.worldY - this.y;
-        const angle = Math.atan2(dy, dx);
         
-        const directions = 8; // Number of directions (e.g., 8 for 8-directional movement)
-        let angleNormalized = ((angle + Math.PI) / (Math.PI * 2)); // Normalize to 0-1
-        const directionIndex = Math.floor(angleNormalized * directions);
-        // console.log('Direction Index:', directionIndex);
-        const directionKey = this.directionMap.get(directionIndex);
-         // Move only if left mouse button is pressed
+        // Handle dash duration
+        if (this.isDashing && this.scene.time.now - this.dashStart > this.dashDuration) {
+            this.body.setVelocity(0, 0);
+            this.moveSpeed = 400;
+            this.isDashing = false;
+            this.dashStart = undefined;
+
+            // IMPORTANT: stop targeting to prevent snap/jitter
+            this.targetX = undefined;
+            this.targetY = undefined;
+
+            // Also freeze velocity just in case
+            this.body.velocity.x = 0;
+            this.body.velocity.y = 0;
+        }
+
+        // Update movement target if mouse is held down
         if (pointer.isDown) {
-            // Store the clicked position as the target
             this.targetX = pointer.worldX;
             this.targetY = pointer.worldY;
-            if (this.isDashing) {
-                // console.log('Dashing!', this.moveSpeed);
+            
+            if (this.isDashing && !this.dashStart) {
                 this.dashStart = this.scene.time.now;
                 this.createDashEffect();
             }
         }
-        
-        if (this.scene.time.now - this.dashStart > this.dashDuration) {
+
+        // Skip movement if there's no target or dash just ended
+        if (this.targetX === undefined || this.targetY === undefined) {
             this.body.setVelocity(0, 0);
-            this.targetX = undefined;
-            this.targetY = undefined;
-            this.dashStart = undefined;
-            this.moveSpeed = 400;
-            this.isDashing = false;
+            this.anims.play('idle', true);
+            this.walkTimer.paused = true;
+            this.updateDangerZone();
+            this.updateText();
+            return;
         }
 
-        if (this.targetX !== undefined && this.targetY !== undefined) {
-            // Calculate direction vector to the target
-            const dx = this.targetX - this.x;
-            const dy = this.targetY - this.y;
+        // Movement logic
+        const dx = this.targetX - this.x;
+        const dy = this.targetY - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
 
-            // Calculate distance to the target
-            const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance > 1) {
+            const decelerationFactor = Phaser.Math.Clamp(distance / 100, 0.1, 1);
+            const speedX = (dx / distance) * this.moveSpeed * decelerationFactor;
+            const speedY = (dy / distance) * this.moveSpeed * decelerationFactor;
 
-            if (distance > 1) { // Small threshold to stop completely
-                // Decelerate speed as the player nears the target
-                const decelerationFactor = Phaser.Math.Clamp(distance / 100, 0.1, 1);
-                
-                // Normalize direction and apply movement speed with deceleration
-                const speedX = (dx / distance) * this.moveSpeed * decelerationFactor;
-                const speedY = (dy / distance) * this.moveSpeed * decelerationFactor;
-                
-                // Smooth movement using linear interpolation (lerp)
+            if (this.isDashing) {
+                this.body.setVelocity(speedX, speedY);
+            } else {
                 this.body.velocity.x = Phaser.Math.Linear(this.body.velocity.x, speedX, this.lerpFactor);
                 this.body.velocity.y = Phaser.Math.Linear(this.body.velocity.y, speedY, this.lerpFactor);
-                // console.log('Current Animation:', this.anims.currentAnim ? this.anims.currentAnim.key : 'None');
-                // console.log('Run Animation Exists:', this.scene.anims.exists('run'));
-                // console.log('Animation Keys:', this.anims.animationManager.anims.keys());
-                this.anims.play(`walk_${directionKey}`, true);
-                this.walkTimer.paused = false; 
-            } else {
-                // Stop the player when close enough
-                this.body.velocity.x = Phaser.Math.Linear(this.body.velocity.x, 0, this.lerpFactor * 2);
-                this.body.velocity.y = Phaser.Math.Linear(this.body.velocity.y, 0, this.lerpFactor * 2);
-                this.setFrame(0);
-                this.walkTimer.paused = true; 
-                // this.play('idle', true);
             }
+
+            // Handle animations
+            const angle = Math.atan2(dy, dx);
+            const angleNormalized = ((angle + Math.PI) / (Math.PI * 2));
+            const directionIndex = Math.floor(angleNormalized * 8);
+            const directionKey = this.directionMap.get(directionIndex);
+
+            this.anims.play(`walk_${directionKey}`, true);
+            this.walkTimer.paused = false;
+        } else {
+            // Stop movement if close to target
+            this.body.setVelocity(0, 0);
+            this.setFrame(0);
+            this.walkTimer.paused = true;
+            this.targetX = undefined;
+            this.targetY = undefined;
         }
+
         this.updateDangerZone();
         this.updateText();
-        // update playing duration
-
     }
+
 }

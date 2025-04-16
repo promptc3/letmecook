@@ -40,14 +40,13 @@
     "map.tileWidth": 16,
     "map.width": 200,
     "openFiles": [
-        "Grass.tsx",
         "sproutMap.tmj"
     ],
     "project": "lhc.tiled-project",
     "property.type": "bool",
     "recentFiles": [
-        "Grass.tsx",
-        "sproutMap.tmj"
+        "sproutMap.tmj",
+        "Grass.tsx"
     ],
     "tileset.embedInMap": true,
     "tileset.lastUsedFormat": "tsx",

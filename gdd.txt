@@ -1,0 +1,43 @@
+# lethimcook
+
+# Type - Web/Multiplayer
+
+# Core game loop
+Players will compete with each other to collect resources in a certain amount of time.
+
+World Overview
+Players live in the world of Originals who demand sacrifice from the players.
+Their main objective in this world is to feed Originals and keep them satiated.
+If the players fail to feed Original they have to face Originals' wrath and die.
+
+
+# Game Modes
+* Non Believer Mode - Player play together to defeat the Original buy feeding them things they dislike.
+* Believer Mode -
+	1. Players have to search for certain sacrifices and the one to find all of them first wins.
+	2. Game goes on for certain amount of time after which all players start facing "wrath" of the Original.
+	3. In case if no player is able to find the items player with most number of items win.
+
+# Characters
+1. Original - God like creature that demand sacrifice. If not fed unleashes wrath upon players.
+There are different type of Original that demand different type of sacrifice every round.
+2. Wrath - Meteor shower over the map which kills all the players. Players still have option to escape it.
+After some time the intensity increases until the player can no longer keep up.
+3. Players - Can collect sacrifice, Stagger other players, Dash, Teleport etc.
+4. Sacrifices - Collectible items, can move also.
+5. Coins - Coins are collectibles that can compensate for absent sacrifices for the player.
+
+Original Name | Sacrifices (Inventory name - Holy Stash)                                  | Profane/Forbidden Items (Profane Stash)
+--------------|---------------------------------------------------------------------------|------------------------------------------------------
+Sugar         | Milk, Candy, Icecream, Fruits, Cookies, Cakes, Hamster                    |   Sacrifices or holy items of other Originals
+Dreams        | Mushrooms, Wine, Soda, Fireflies, Fruits, Spiders, Unicorn bones          |   are disliked unless they have an item in common.
+Tank          | Milk, Cow, Chicken, Iron, Wood, Cat, Goat, Veggies, Golem core            |   Coins are never considered Profane by Originals.
+Fury          | Dog, Horse, Chicken, Pork, Soda, Ghosts, coal, black powder, gun powder   |
+Venom         | Goblin, Slime, Wood, Mushroom, Dragon egg                                 |
+
+
+
+
+
+
+

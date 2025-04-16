@@ -23,9 +23,11 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
         this._id = 'food_' + Math.random().toString(36);
         this.scene.tweens.add({
             targets: this,
-            duration: 800,
+            y: this.y - 5,
+            duration: 1200,
             yoyo: true,
-            repeat: -1
+            repeat: -1,
+            ease: 'Sine.easeInOut'
         });
 
     }

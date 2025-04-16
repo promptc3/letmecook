@@ -11,23 +11,16 @@ export default class DashPickup extends Phaser.Physics.Arcade.Sprite {
     this.name = "dash";
     // Setup physics properties
     this.body.setAllowGravity(false);
-    
-    // Add a pulsing animation
+    this.setScale(1);
     this.scene.tweens.add({
       targets: this,
-      scale: 1,
-      duration: 800,
+      y: this.y - 7,
+      duration: 1000,
       yoyo: true,
-      repeat: -1
-    });
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    })
     
-    // Add a small rotation
-    this.scene.tweens.add({
-      targets: this,
-      angle: 360,
-      duration: 3000,
-      repeat: -1
-    });
   }
   
   setId(id) {
