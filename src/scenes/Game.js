@@ -472,7 +472,7 @@ export class Game extends Phaser.Scene {
     this.scoreBoardText.setText(scoreText);
   }
   update(time, delta) {
-    this.player.update();
+    this.player.update(delta);
     // Update inventory display
     this.updateInventoryText();
 

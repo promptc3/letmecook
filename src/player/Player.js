@@ -212,9 +212,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         // Create a trail effect when dashing
         const trail = this.scene.add.image(this.x, this.y, this.texture.key)
         .setAlpha(0.7)
-        .setTint(0x3498db)
+        .setTint(0xAEFA00, 0.5) // Red tint for the trail
         .setScale(this.scaleX, this.scaleY)
-        .setFlipX(this.flipX);
+        .setFlipX(this.flipX)
         
         // Fade out and destroy the trail
         this.scene.tweens.add({
@@ -262,7 +262,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.name.y = this.y - this.height/2;
     }
 
-    update() {
+    update(delta) {
         const pointer = this.input.activePointer;
         
         // Handle dash duration
@@ -306,14 +306,18 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         const dx = this.targetX - this.x;
         const dy = this.targetY - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
+        const maxDistance = 300;
 
         if (distance > 1) {
             const decelerationFactor = Phaser.Math.Clamp(distance / 100, 0.1, 1);
+
             const speedX = (dx / distance) * this.moveSpeed * decelerationFactor;
             const speedY = (dy / distance) * this.moveSpeed * decelerationFactor;
 
             if (this.isDashing) {
-                this.body.setVelocity(speedX, speedY);
+                const ease = Phaser.Math.Easing.Expo.Out(distance / maxDistance);
+                const newSpeedX = speedX * ease;
+                this.body.setVelocity(newSpeedX, speedY);
             } else {
                 this.body.velocity.x = Phaser.Math.Linear(this.body.velocity.x, speedX, this.lerpFactor);
                 this.body.velocity.y = Phaser.Math.Linear(this.body.velocity.y, speedY, this.lerpFactor);
