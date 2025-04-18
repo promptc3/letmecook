@@ -3,16 +3,8 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
         super(scene, x, y, texture);
         // Add the sprite to the scene
         scene.add.existing(this);
-        scene.physics.add.existing(this, type === "static"); // true = static body
-        
         this.name = name;
         this.type = type;
-        if (type === "dynamic") {
-            this.body.setBounce(0.5);
-            this.body.setDrag(50);
-            this.setRandomMovement();
-        }
-        
         // Flag to track if this item has been picked up
         this.isPickedUp = false;
         
@@ -21,15 +13,17 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
         
         // Generate a unique ID for this food item
         this._id = 'food_' + Math.random().toString(36);
-        this.scene.tweens.add({
-            targets: this,
-            y: this.y - 5,
-            duration: 1200,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
-
+        if (type === "static") {
+            scene.physics.add.existing(this, true); // true = static body
+            this.scene.tweens.add({
+                targets: this,
+                y: this.y - 5,
+                duration: 1200,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+        }
     }
 
     setId(id) {
@@ -40,24 +34,6 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
         return this._id;
     }
 
-    setRandomMovement() {
-        this.scene.time.addEvent({
-            delay: Phaser.Math.Between(1000, 3000), // Change direction at random intervals
-            callback: this.changeDirection,
-            callbackScope: this,
-            loop: true
-        });
-    }
-
-    changeDirection() {
-        if (!this.isPickedUp) {
-            let speed = Phaser.Math.Between(50, 150); // Random speed
-            let angle = Phaser.Math.FloatBetween(0, 2 * Math.PI); // Random direction
-            if (this.body) {
-                this.body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
-            }
-        }
-    }
     // Method to handle being picked up by the player
     pickup() {
         if (!this.isPickedUp) {
@@ -94,11 +70,4 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
         return false;
     }
     
-    // Check for overlap with another game object
-    checkOverlap(target) {
-        return Phaser.Geom.Intersects.RectangleToRectangle(
-            this.getBounds(),
-            target.getBounds()
-        );
-    }
 }

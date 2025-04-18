@@ -77,6 +77,10 @@ export class Bootloader extends Phaser.Scene {
       frameWidth: 32,
       frameHeight: 48
     });
+    this.load.spritesheet('chicken', './../assets/characters/chicken_sprite.png', {
+      frameWidth: 16,
+      frameHeight: 16
+    });
   }
 
   loadSounds() {

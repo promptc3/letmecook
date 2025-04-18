@@ -5,15 +5,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         // Add this sprite to the scene
         scene.add.existing(this);
 
-        const spriteHeight = this.height * this.scaleY;
-
         // Enable physics on this sprite
         scene.physics.add.existing(this);
         this.scene.physics.world.enable(this);
         // this.setSize(32, 48);
         
         // this.body.setCircle(radius, 0, 0);
-        this.body.setSize(32, 48);
+        this.setScale(0.5);
         // this.body.setGravity(false);
         // this.body.setCollideWorldBounds(false); 
         
@@ -22,7 +20,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.lerpFactor = 0.10; // Controls how smoothly the player follows the cursor (0-1)
 
         // danger zone (2x the radius of the player)
-        this.dangerZone = scene.add.rectangle(x, y, 32, 48);
+        this.dangerZone = scene.add.rectangle(x, y, 16, 24);
         scene.physics.add.existing(this.dangerZone, false); // false = non-static body
         
         // Make danger zone not collide with anything physically

@@ -2,6 +2,7 @@ import { Client, getStateCallbacks } from "colyseus.js";
 import Player from "../player/Player.js";
 import FoodItem from "../foodItems/FoodItem.js";
 import DashPickup from "../pickups/DashPickup.js";
+import MovingItem from "../foodItems/MovingItem.js";
 
 export class Game extends Phaser.Scene {
   constructor() {
@@ -89,6 +90,7 @@ export class Game extends Phaser.Scene {
     );
 
     this.foodItems = this.add.group();
+    this.movingItems = this.add.group(null, {runChildUpdate: true});
     this.powerUps = this.add.group();
     // Set up player's danger zone to detect food items
     this.player.setupDangerZoneOverlap(this.foodItems, this.powerUps);
@@ -278,16 +280,23 @@ export class Game extends Phaser.Scene {
     });
 
     $(this.room.state).foodItems.onAdd((foodItem, sessionId) => {
-      const item = new FoodItem(
-        this,
-        foodItem.x,
-        foodItem.y,
-        foodItem.texture,
-        foodItem.name,
-        foodItem.static ? "static" : "dynamic"
-      );
-      item.setId(foodItem.id);
-      this.foodItems.add(item);
+      if (foodItem.static) {
+        const item = new FoodItem(
+          this,
+          foodItem.x,
+          foodItem.y,
+          foodItem.texture,
+          foodItem.name,
+        );
+        item.setId(foodItem.id);
+        this.foodItems.add(item);
+      } else {
+        const item = new MovingItem(this, foodItem.x, foodItem.y, foodItem.texture, foodItem.name);
+        item.setId(foodItem.id);
+        item.setupDangerZoneOverlap(this.player);
+        this.movingItems.add(item);
+        this.foodItems.add(item);
+      }
     });
 
     $(this.room.state).powerUps.onAdd((powerUp, sessionId) => {
@@ -475,7 +484,6 @@ export class Game extends Phaser.Scene {
     this.player.update(delta);
     // Update inventory display
     this.updateInventoryText();
-
     // Check for drop key press
     if (
       Phaser.Input.Keyboard.JustDown(this.dropKey) &&

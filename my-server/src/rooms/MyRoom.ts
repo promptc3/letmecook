@@ -128,6 +128,15 @@ export class MyRoom extends Room<MyRoomState> {
           foodItem.static = true;
           this.foodItems.push(foodItem);
     }
+    const movFoodItem = new FoodItem();
+      movFoodItem.id = 'food_' + Math.random().toString(36);
+      movFoodItem.name = "chicken";
+      movFoodItem.texture = "chicken";
+      movFoodItem.x = 400;
+      movFoodItem.y = 400;
+      movFoodItem.isPickedUp = false;
+      movFoodItem.static = false;
+      this.foodItems.push(movFoodItem);
     for(let i=0; i < 10; i++) {
         const x = Math.random()*this.mapWidth;
         const y = Math.random()*this.mapHeight;
