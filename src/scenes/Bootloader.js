@@ -33,6 +33,8 @@ export class Bootloader extends Phaser.Scene {
     this.load.image('tiles', './../assets/Tilesets/Grass.png');
     this.load.image('biomTiles', './../assets/objects/Basic_Grass_Biom_things.png');
     this.load.image('retry-button', '../assets/retry-button.png');
+    this.load.image('starParticle', '../assets/elements/star.png');
+    this.load.image('bubbleParticle', '../assets/elements/bubble.png');
     const vegetables = ["vegetable_bellpepper_green", "vegetable_carrot", "vegetable_corn", "vegetable_cucumber", "vegetable_eggplant", "vegetable_onion", "vegetable_potato", "vegetable_tomato", "vegetable_garlic", "vegetable_ginger", "vegetable_bellpepper_red","vegetable_bellpepper_yellow", "vegetable_pumpkin"];
     vegetables.forEach(item => {
         this.load.image(item, `./../assets/food/${item}.png`);

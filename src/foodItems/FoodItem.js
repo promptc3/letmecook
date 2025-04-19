@@ -39,8 +39,35 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
         if (!this.isPickedUp) {
             this.isPickedUp = true;
             this.body.enable = false;
-            this.setVisible(false);   
             console.log(`${this.name} has been picked up by player`);
+            // this.particles.setActive(true);
+            const particleZone = new Phaser.Geom.Rectangle(0, 0, 16, 40); 
+            this.particles = this.scene.add.particles(this.x - 8, this.y - 20, 'starParticle',
+                {
+                    lifespan: 600,
+                    scale: { start: 0.5, end: 0 },
+                    alpha: { start: 1, end: 0 },
+                    speed: {min: 20, max: 50},
+                    quantity: 10,
+                    frequency: 50,
+                    emitZone: {
+                        type: "random",
+                        source: particleZone
+                    },
+                    blendMode: 'ADD'
+                }
+            );
+             this.scene.tweens.add({
+                targets: this,
+                scale: { from: 1, to: 1.3 },
+                alpha: 0,
+                duration: 250,
+                ease: 'Back.easeOut',
+                onComplete: () => {
+                    this.setVisible(false)
+                    this.particles.stop();
+                }
+            });
             return true;
         }
         return false;
