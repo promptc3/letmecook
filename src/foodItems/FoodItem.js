@@ -54,14 +54,14 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
                         type: "random",
                         source: particleZone
                     },
-                    blendMode: 'ADD'
+                    blendMode: 'SCREEN'
                 }
             );
              this.scene.tweens.add({
                 targets: this,
-                scale: { from: 1, to: 1.3 },
+                scale: { from: 1, to: 0.3 },
                 alpha: 0,
-                duration: 250,
+                duration: 1100,
                 ease: 'Back.easeOut',
                 onComplete: () => {
                     this.setVisible(false)

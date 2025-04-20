@@ -20,7 +20,6 @@ export class Game extends Phaser.Scene {
       ],
     };
     this.invHash = new Map();
-    this.recipe.ingredients.forEach((i) => this.invHash.set(i.name, 0));
     // new Client
     this.client = null;
     this.room = null;
@@ -30,22 +29,13 @@ export class Game extends Phaser.Scene {
   }
 
   async create() {
-    const leftText =
-      this.cameras.main.worldView.x + this.cameras.main.width / 2 - 200;
-    const centerTextX =
-      this.cameras.main.worldView.x + this.cameras.main.width / 2;
-    const rightText =
-      this.cameras.main.worldView.x - 10 + this.cameras.main.width;
-    const topText =
-      this.cameras.main.worldView.y + this.cameras.main.height / 2 - 110;
-    const bottomText =
-      this.cameras.main.worldView.y + this.cameras.main.height / 2 + 110;
     try {
       this.map = this.make.tilemap({ key: "map" });
       console.log("Map loaded.", this.map);
     } catch (error) {
       console.error("Failed to load map", error);
     }
+    this.registry.set('recipe', this.recipe);
     const tileset = this.map.addTilesetImage("Grass", "tiles");
     const biomTileset = this.map.addTilesetImage("Biom", "biomTiles");
     this.groundLayer = this.map.createLayer("Background", tileset);
@@ -79,8 +69,6 @@ export class Game extends Phaser.Scene {
     this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
 
 
-    console.info("Camera width: ", this.cameras.main.width);
-    console.info("Camera height: ", this.cameras.main.height);
     // Add key to drop items
     this.dropKey = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.SPACE
@@ -92,71 +80,14 @@ export class Game extends Phaser.Scene {
     this.foodItems = this.add.group();
     this.movingItems = this.add.group(null, {runChildUpdate: true});
     this.powerUps = this.add.group();
+    this.registry.set('powerups', 0);
     // Set up player's danger zone to detect food items
     this.player.setupDangerZoneOverlap(this.foodItems, this.powerUps);
     this.setupEventListeners();
-    // Create UI text for inventory display
-    this.inventoryText = this.add.text(
-      leftText,
-      bottomText + 10,
-      "Inventory Empty",
-      {
-        fontSize: "9px",
-        fill: "#ff0000",
-        align: "left",
-      }
-    );
-    this.inventoryText.setOrigin(0.5);
-    this.inventoryText.setScrollFactor(0); // Fix to camera
 
-    this.powerUpText = this.add.text(
-      leftText,
-      topText,
-      `Dash x${this.player.powerUps.length}`,
-      {
-        fontSize: "9px",
-        fill: "#ff0000",
-        align: "left",
-      }
-    );
-    this.powerUpText.setOrigin(0.5);
-    this.powerUpText.setScrollFactor(0); // Fix to camera
-    // Create UI text for recipe display
-    let itemNames = "";
-    this.recipe.ingredients.forEach((ing) => {
-      itemNames += `${ing.name}-${ing.quantity} `;
-    });
-    this.goalText = this.add.text(leftText, bottomText, `Goal: ${itemNames}`, {
-      fontSize: "9px",
-      fill: "#ff0000",
-      align: "left",
-    });
-    this.goalText.setOrigin(0.5);
-    this.goalText.setScrollFactor(0); // Fix to camera
-    // Create interaction message
-    this.messageText = this.add.text(rightText, bottomText, "", {
-      fontSize: "9px",
-      fill: "#ffffff",
-    });
-    this.messageText.setOrigin(0.5);
-    this.messageText.setScrollFactor(0);
     // Create the circular drop zone
     this.createDropZone(500, 700, 50); // x, y, radius
 
-    // Connection status text
-    this.connectionText = this.add.text(centerTextX, topText, "Connecting...", {
-      fontSize: "9px",
-      fill: "#ffffff",
-    });
-    this.connectionText.setOrigin(0.5);
-    this.connectionText.setScrollFactor(0);
-    this.scoreBoardText = this.add.text(rightText, topText, "", {
-      fontSize: "9px",
-      fill: "#ffffff",
-      backgroundColor: "#000000",
-    });
-    this.scoreBoardText.setOrigin(0.5);
-    this.scoreBoardText.setScrollFactor(0);
     const playerName = "Player " + Math.floor(Math.random() * 100);
     this.playerName = this.add.text(400, 200, `${playerName}`, {
       fontSize: "18px",
@@ -184,11 +115,13 @@ export class Game extends Phaser.Scene {
         // Handle food item pickup
         pickedItem.pickup();
         let prevQty = this.invHash.get(pickedItem.name);
-        if (prevQty !== undefined || prevQty !== null) {
+        if (prevQty > 0) {
           this.invHash.set(pickedItem.name, prevQty + 1);
         } else {
           this.invHash.set(pickedItem.name, 1);
         }
+        const newHash = this.invHash;
+        this.registry.set("inventory", newHash);
         this.displayPickupMessage(pickedItem.name);
       }
       if (this.room) {
@@ -229,12 +162,10 @@ export class Game extends Phaser.Scene {
         y: this.player.y,
         rotation: this.player.rotation,
       });
-      this.connectionText.setText("Connected");
-      this.connectionText.setFill("#00ff00");
+      this.events.emit("connected");
     } catch (error) {
+      this.events.emit("connectionFailed");
       console.error("Failed to connect to server", error);
-      this.connectionText.setText("Connection failed");
-      this.connectionText.setFill("#ff0000");
     }
   }
 
@@ -318,7 +249,8 @@ export class Game extends Phaser.Scene {
       const pickedItem = this.foodItems
         .getChildren()
         .find((item) => item.getId() === itemId);
-      console.log("Picked item: ", pickedItem);
+      console.log("Picked", pickedItem);
+      this.displayMessage(`Picked ${pickedItem.name}`)
 
       if (pickedItem) {
         pickedItem.pickup();
@@ -338,7 +270,7 @@ export class Game extends Phaser.Scene {
     this.room.onMessage("powerUpPickedUp", (data) => {
       const { playerId, itemId } = data;
 
-      console.log(`Power-up picked by player ${playerId}: ${itemId}`);
+      console.log(`Dash picked by player ${playerId}: ${itemId}`);
       // Find the item in the foodItems group
       const pickedItem = this.powerUps
         .getChildren()
@@ -368,7 +300,7 @@ export class Game extends Phaser.Scene {
     // Set up the physics body for the zone
     this.physics.world.enable(this.dropZone, Phaser.Physics.Arcade.STATIC_BODY);
     const graphics = this.add.graphics({
-      lineStyle: { width: 5, color: 0xa41fe0 },
+      lineStyle: { width: 2, color: 0xa41fe0 },
     });
     graphics.strokeCircle(x, y, radius);
 
@@ -442,7 +374,7 @@ export class Game extends Phaser.Scene {
           const dropY = this.player.y + Math.sin(angle) * distance;
 
           lastItem.drop(dropX, dropY);
-          this.displayMessage(`Dropped: ${lastItem.name}`);
+          this.displayMessage(`Dropped ${lastItem.name}`);
           // Send item drop to server
           if (this.room) {
             this.room.send("itemDrop", {
@@ -458,19 +390,7 @@ export class Game extends Phaser.Scene {
   }
 
   updateDashText() {
-    this.powerUpText.setText(`Dash x${this.player.powerUps.length}`);
-  }
-  // Update the inventory display text
-  updateInventoryText() {
-    if (this.player.inventory.length === 0) {
-      this.inventoryText.setText("Inventory Empty");
-    } else {
-      let itemNames = "";
-      this.recipe.ingredients.forEach((ing) => {
-        itemNames += `${ing.name}-${this.invHash.get(ing.name)} `;
-      });
-      this.inventoryText.setText(`Current: ${itemNames}`);
-    }
+    this.registry.set('powerups', this.player.powerUps.length);
   }
 
   updateScoreBoard() {
@@ -478,12 +398,10 @@ export class Game extends Phaser.Scene {
     this.scoreBoard.forEach((player) => {
       scoreText += `${player.name}: ${player.playDuration} seconds\n`;
     });
-    this.scoreBoardText.setText(scoreText);
+    this.registry.set('score', scoreText);
   }
   update(time, delta) {
     this.player.update(delta);
-    // Update inventory display
-    this.updateInventoryText();
     // Check for drop key press
     if (
       Phaser.Input.Keyboard.JustDown(this.dropKey) &&
@@ -509,21 +427,12 @@ export class Game extends Phaser.Scene {
 
   // Display pickup message
   displayPickupMessage(itemName) {
-    this.displayMessage(`Picked up: ${itemName}`);
+    this.displayMessage(`Picked up ${itemName}!`);
   }
 
   // Generic message display
   displayMessage(text) {
-    this.messageText.setText(text);
-    this.messageText.setAlpha(1);
-
-    // Clear the message after 2 seconds
-    this.tweens.add({
-      targets: this.messageText,
-      alpha: 0,
-      duration: 4000,
-      ease: "Power2",
-    });
+    this.registry.set('displayMessage', text);
   }
 
   // Clean up when scene is shut down

@@ -11,8 +11,8 @@ export default class DashPickup extends Phaser.Physics.Arcade.Sprite {
     this.name = "dash";
     // Setup physics properties
     this.body.setAllowGravity(false);
-    this.setScale(1);
-    this.scene.tweens.add({
+    // this.setScale(1);
+    scene.tweens.add({
       targets: this,
       y: this.y - 7,
       duration: 1000,
@@ -26,6 +26,7 @@ export default class DashPickup extends Phaser.Physics.Arcade.Sprite {
   setId(id) {
     this.id = `dash-pickup-${id}`;
   }
+
   getId() {
     return this.id;
   }
@@ -33,23 +34,25 @@ export default class DashPickup extends Phaser.Physics.Arcade.Sprite {
     // Play collect animation and destroy
     this.particles = this.scene.add.particles(this.x, this.y + 8, 'bubbleParticle',
         {
-            speedY: { min: -50, max: -100 },
-            speedX: { min: -20, max: 20 },
-            scale: { start: 0.3, end: 1 },
+            speedY: { min: -50, max: -80 },
+            speedX: { min: -10, max: 10 },
+            scale: { start: 0.5, end: 1 },
             alpha: { start: 1, end: 0 },
             lifespan: 1000,
-            quantity: 5,
+            quantity: 1,
             gravityY: -100,
         }
     );
+    
     this.scene.tweens.add({
       targets: this,
-      scale: 0,
-      alpha: 0,
-      duration: 200,
+      scale: { from: 1, to: 0.3 },
+      alpha: { from: 1, to: 0 },
+      duration: 1100,
+      ease: 'Back.easeIn',
       onComplete: () => {
         this.destroy();
-        this.particles.stop();
+        this.particles.destroy();
       }
     });
   }

@@ -3,6 +3,7 @@ import { Bootloader } from '../scenes/Bootloader.js';
 import { Start } from '../scenes/Start.js';
 import { Game } from '../scenes/Game.js';
 import { GameOver } from '../scenes/GameOver.js';
+import { UIScene } from  '../scenes/UIScene.js';
 // Prevent right click menu from showing because it is annoying
 document.addEventListener('contextmenu', event => event.preventDefault());
 const config = {
@@ -13,7 +14,7 @@ const config = {
     height: window.innerHeight * window.devicePixelRatio,
     pixelArt: true,
     scene: [
-        Bootloader, Start, Game, GameOver
+        Bootloader, Start, Game, GameOver, UIScene
     ],
     scale: {
         mode: Phaser.Scale.FIT,

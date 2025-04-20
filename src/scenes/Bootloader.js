@@ -8,6 +8,7 @@ export class Bootloader extends Phaser.Scene {
     this.setLoadEvents();
     this.loadImages();
     this.loadSounds();
+    this.loadFont();
   }
 
   setLoadEvents() {
@@ -83,6 +84,18 @@ export class Bootloader extends Phaser.Scene {
       frameWidth: 16,
       frameHeight: 16
     });
+    this.load.spritesheet('play-button', './../assets/UI/spriteSheets/BigPlayButton.png', {
+      frameWidth: 96,
+      frameHeight: 32
+    });
+    this.load.spritesheet('inventory', './../assets/UI/spriteSheets/inventory_48x48.png', {
+      frameWidth: 48,
+      frameHeight: 48,
+    });
+  }
+
+  loadFont() {
+    this.load.font('pixelFont', './../assets/UI/fonts/sproutLands.ttf', 'opentype');
   }
 
   loadSounds() {
