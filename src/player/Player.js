@@ -45,7 +45,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.dashDuration = 800;
         this.dashStart = undefined;
         this.isStunned = false;
-        this.stunDuration = 1700;
+        this.stunDuration = 2700;
         this.input.hitArea = new Phaser.Geom.Rectangle(0, 0, 32, 48); // Set hit area for the input
         this.setupAnimations(scene);
         this.directionMap = new Map([
@@ -139,7 +139,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     setName(name) {
-        this.name = this.scene.add.text(this.x, this.y, `${this.isStunned ? name+"::Stunned" : name}`, { fontSize: '9px', fill: '#000' });
+        this.nameUI = this.scene.add.text(this.x, this.y, `${name}`, {fontFamily: 'pixelFont', fontSize: '9px', fill: '#000' });
+        this.name = name;
     }
 
     setupDangerZoneOverlap(foodItems, powerUps) {
@@ -232,12 +233,22 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             this.isStunned = true;
             this.moveSpeed = 0;
             this.body.setVelocity(0, 0);
+            this.nameUI.setText(`${this.name}::Stunned`);
             this.scene.events.emit('playerStunned', Math.random()*3 + 1);
             // End dash after duration
-            this.scene.time.delayedCall(this.stunDuration, () => {
-                this.moveSpeed = 400;
-                this.isStunned = false;
-            });
+            this.scene.tweens.add({
+                targets: this,
+                duration: 100,
+                alpha: 0,
+                yoyo: true,
+                repeat: Math.floor(this.stunDuration/200) - 1,
+                onComplete: () => {
+                    this.alpha = 1;
+                    this.moveSpeed = 400;
+                    this.isStunned = false;
+                    this.nameUI.setText(this.name)
+                }
+            })
         } else {
             // console.log('stopping');
             this.body.setVelocity(0, 0);
@@ -256,8 +267,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     updateText() {
-        this.name.x = this.x - this.width/2;
-        this.name.y = this.y - this.height/2;
+        this.nameUI.x = this.x - this.width/2;
+        this.nameUI.y = this.y - this.height/2;
     }
 
     update(delta) {

@@ -137,7 +137,7 @@ export class MyRoom extends Room<MyRoomState> {
       movFoodItem.isPickedUp = false;
       movFoodItem.static = false;
       this.foodItems.push(movFoodItem);
-    for(let i=0; i < 10; i++) {
+    for(let i=0; i < 30; i++) {
         const x = Math.random()*this.mapWidth;
         const y = Math.random()*this.mapHeight;
         const newPowerUp = new PowerUp();

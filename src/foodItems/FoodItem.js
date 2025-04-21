@@ -10,6 +10,7 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
         
         // Store reference to the scene
         this.scene = scene;
+        this.setInteractive();
         
         // Generate a unique ID for this food item
         this._id = 'food_' + Math.random().toString(36);
@@ -24,6 +25,22 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
                 ease: 'Sine.easeInOut'
             });
         }
+        this.setupPointerEvents(scene);
+    }
+
+    setupPointerEvents(scene) {
+        this.on('pointerover', function (pointer) {
+           scene.input.setDefaultCursor('url(./../assets/UI/spriteSheets/mouseSprites/Catpaw-Mouse-icon.cur), pointer');
+           console.info("Pointer over sprite")
+        });
+
+        this.on('pointerout', function (pointer) {
+           scene.input.setDefaultCursor('url(./../assets/UI/spriteSheets/mouseSprites/Catpaw-pointing-Mouse-icon.cur), pointer');
+        });
+
+        this.on('pointerdown', function (pointer) {
+           scene.input.setDefaultCursor('url(./../assets/UI/spriteSheets/mouseSprites/Catpaw-holding-Mouse-icon.cur), pointer');
+        });
     }
 
     setId(id) {

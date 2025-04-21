@@ -50,7 +50,7 @@ export class UIScene extends Phaser.Scene {
     for (let i=0; i < 9; i++) {
       const x = leftText + 10 + i * (tileSize*padding);
       const y = bottomText - (tileSize + padding);
-      const tile = this.add.image(x, y, "inventory", 4).setScale(2);
+      const tile = this.add.image(x, y, "inventory", 7).setScale(1.5);
       this.inventory.push({
         tile,
         item: null,

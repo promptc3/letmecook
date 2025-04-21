@@ -35,7 +35,9 @@ export class Game extends Phaser.Scene {
     } catch (error) {
       console.error("Failed to load map", error);
     }
+    this.input.setDefaultCursor('url(./../assets/UI/spriteSheets/mouseSprites/Catpaw-pointing-Mouse-icon.cur), pointer');
     this.registry.set('recipe', this.recipe);
+    this.registry.set('inventory', new Map());
     const tileset = this.map.addTilesetImage("Grass", "tiles");
     const biomTileset = this.map.addTilesetImage("Biom", "biomTiles");
     this.groundLayer = this.map.createLayer("Background", tileset);
@@ -88,15 +90,9 @@ export class Game extends Phaser.Scene {
     // Create the circular drop zone
     this.createDropZone(500, 700, 50); // x, y, radius
 
-    const playerName = "Player " + Math.floor(Math.random() * 100);
-    this.playerName = this.add.text(400, 200, `${playerName}`, {
-      fontSize: "18px",
-      fill: "#000fff",
-    });
-    this.player.setName(playerName);
-    this.playerName.setOrigin(0.5);
-    this.playerName.setScrollFactor(0);
-    await this.connectToServer(playerName);
+    this.playerName = "Player " + Math.floor(Math.random() * 100);
+    this.player.setName(this.playerName);
+    await this.connectToServer(this.playerName);
     if (this.room) {
       this.setupRoomListeners();
     }
@@ -157,7 +153,7 @@ export class Game extends Phaser.Scene {
       this.client = new Client("http://localhost:2567");
       console.log("Client created", this.client, " playerName: ", name);
       this.room = await this.client.joinOrCreate("my_room", {
-        name: this.playerName.text,
+        name: this.playerName,
         x: this.player.x,
         y: this.player.y,
         rotation: this.player.rotation,

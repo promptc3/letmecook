@@ -88,7 +88,7 @@ export class Bootloader extends Phaser.Scene {
       frameWidth: 96,
       frameHeight: 32
     });
-    this.load.spritesheet('inventory', './../assets/UI/spriteSheets/inventory_48x48.png', {
+    this.load.spritesheet('inventory', './../assets/UI/spriteSheets/Inventory_Blocks_Spritesheet.png', {
       frameWidth: 48,
       frameHeight: 48,
     });
