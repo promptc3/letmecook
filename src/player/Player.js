@@ -27,7 +27,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.dangerZone.body.setCollideWorldBounds(false);
         
         // Player's inventory
-        this.inventory = [];
+        this.inventory = new Map();
 
         // Player's powerups
         this.powerUps = [];
@@ -46,6 +46,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.dashStart = undefined;
         this.isStunned = false;
         this.stunDuration = 2700;
+        this.readyToDrop = false;
         this.input.hitArea = new Phaser.Geom.Rectangle(0, 0, 32, 48); // Set hit area for the input
         this.setupAnimations(scene);
         this.directionMap = new Map([
@@ -160,13 +161,36 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         );
     }
 
+    toggleReadyToDrop() {
+        this.readyToDrop = !this.readyToDrop;
+    }
+
+
     collectFoodItem(dangerZone, foodItem) {
         // Add obstacle to inventory if not already collected
-        if (!this.inventory.includes(foodItem)) {
-            this.inventory.push(foodItem);
-            console.log(`Collected obstacle: ${foodItem.name || 'unnamed foodItem'}`);
-            this.scene.events.emit('foodCollected', foodItem);
+        const item = this.inventory.get(foodItem.name);
+        // console.info(`[Player] Inventory:`, this.inventory);
+        this.scene.events.emit('foodCollected', foodItem);
+        if (item !== undefined){
+            const newQty = item.quantity + 1;
+            // console.info(`[Player] Collected item: ${item.name} Qty: ${item.quantity}`);
+            this.inventory.set(foodItem.name, { quantity: newQty, obj: foodItem });
+        } else {
+            // console.info(`[Player] Collected item: ${foodItem.name} Qty: ${1}`);
+            this.inventory.set(foodItem.name, { quantity: 1, obj: foodItem })
         }
+    }
+
+    dropFoodItem(name) {
+        // console.info(`[player] Dropping ${name} from `, this.inventory);
+        const item = this.inventory.get(name);
+        if (item === undefined) return;
+        if (item.quantity === 1) {
+            this.inventory.delete(name);
+        } else {
+            this.inventory.set(item, { quantity: item.quantity - 1, obj: item.obj });
+        }
+        return item.obj;
     }
 
     collectPowerUp(dangerZone, powerUp) {
@@ -295,7 +319,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             this.targetX = pointer.worldX;
             this.targetY = pointer.worldY;
             
-            if (this.isDashing && !this.dashStart) {
+            if (this.isDashing && !this.dashStart && !this.readyToDrop) {
                 this.dashStart = this.scene.time.now;
                 this.createDashEffect();
             }
@@ -317,7 +341,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         const distance = Math.sqrt(dx * dx + dy * dy);
         const maxDistance = 300;
 
-        if (distance > 1) {
+        if (distance > 10 && !this.readyToDrop) {
             const decelerationFactor = Phaser.Math.Clamp(distance / 100, 0.1, 1);
 
             const speedX = (dx / distance) * this.moveSpeed * decelerationFactor;

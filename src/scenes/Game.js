@@ -26,6 +26,7 @@ export class Game extends Phaser.Scene {
     this.remotePlayers = new Map();
     this.scoreBoard = [];
     this.margin = { x: 200, y: 100 };
+    this.selectedItem = null;
   }
 
   async create() {
@@ -127,6 +128,10 @@ export class Game extends Phaser.Scene {
         });
       }
     });
+    const uiScene = this.scene.get("UIScene");
+    uiScene.events.on("itemSelected", (data) => {
+      this.selectedItem = data.name
+    }, this)
     this.events.on("powerUpCollected", (pickedItem) => {
       console.log(`Picked ${pickedItem.name}`);
       this.sound.play("pick");
@@ -353,33 +358,25 @@ export class Game extends Phaser.Scene {
   }
 
   // Handle dropping the last picked up item
-  dropItem(count) {
-    for (let i = 0; i < count; i++) {
-      if (this.player.inventory.length > 0) {
-        const lastItem = this.player.inventory.pop();
-        console.info(`Dropping ${lastItem.name}`);
-        this.sound.play("drop");
-
-        if (lastItem instanceof FoodItem) {
-          // Drop the item slightly in front of the player based on rotation
-          const angle =
-            this.player.rotation + Phaser.Math.Angle.Between(0, 0, 500, 500);
-          const distance = this.player.width + 50;
-
-          const dropX = this.player.x + Math.cos(angle) * distance;
-          const dropY = this.player.y + Math.sin(angle) * distance;
-
-          lastItem.drop(dropX, dropY);
-          this.displayMessage(`Dropped ${lastItem.name}`);
-          // Send item drop to server
-          if (this.room) {
-            this.room.send("itemDrop", {
-              itemId: lastItem.getId(),
-              itemName: lastItem.name,
-              x: dropX,
-              y: dropY,
-            });
-          }
+  dropItem(dropX, dropY) {
+    if (this.selectedItem !== null) {
+      const lastItem = this.player.dropFoodItem(this.selectedItem);
+      if (lastItem && !lastItem.isDropping) {
+        // update the inventory
+        const prevQty = this.invHash.get(this.selectedItem);
+        this.invHash.set(this.selectedItem, prevQty - 1);
+        const newHash = this.invHash;
+        this.registry.set('inventory', newHash);
+        lastItem.drop(this.player, dropX, dropY);
+        this.displayMessage(`Dropped ${this.selectedItem}`);
+        // Send item drop to server
+        if (this.room) {
+          this.room.send("itemDrop", {
+            itemId: lastItem.getId(),
+            itemName: lastItem.name,
+            x: dropX,
+            y: dropY,
+          });
         }
       }
     }
@@ -396,18 +393,30 @@ export class Game extends Phaser.Scene {
     });
     this.registry.set('score', scoreText);
   }
+
   update(time, delta) {
     this.player.update(delta);
     // Check for drop key press
-    if (
-      Phaser.Input.Keyboard.JustDown(this.dropKey) &&
-      this.player.inventory.length > 0
-    ) {
-      this.dropItem(1);
+    if (Phaser.Input.Keyboard.JustDown(this.dropKey)) {
+      this.player.toggleReadyToDrop();
+      this.displayMessage(`${this.player.readyToDrop ? "" : "Not"} Ready to drop`)
     }
     if (Phaser.Input.Keyboard.JustDown(this.powerupKey)) {
       this.player.enablePowerUp();
       this.updateDashText();
+    }
+    const pointer = this.input.activePointer;
+    if (pointer.isDown && this.player.readyToDrop) {
+        const targetX = pointer.worldX;
+        const targetY = pointer.worldY;
+        
+        const dx = targetX - this.player.x;
+        const dy = targetY - this.player.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const maxDistance = 400;
+        if (distance < maxDistance) {
+          this.dropItem(targetX, targetY);
+        }
     }
     if (
       this.room &&

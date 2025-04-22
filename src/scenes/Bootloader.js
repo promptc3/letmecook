@@ -92,6 +92,10 @@ export class Bootloader extends Phaser.Scene {
       frameWidth: 48,
       frameHeight: 48,
     });
+    this.load.spritesheet('selected', './../assets/UI/spriteSheets/Selection_Spritesheet.png', {
+      frameWidth: 48,
+      frameHeight: 48,
+    });
   }
 
   loadFont() {

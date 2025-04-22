@@ -11,6 +11,7 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
         // Store reference to the scene
         this.scene = scene;
         this.setInteractive();
+        this.isDropping = false;
         
         // Generate a unique ID for this food item
         this._id = 'food_' + Math.random().toString(36);
@@ -91,24 +92,50 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
     }
     
     // Method to drop the item at specified coordinates
-    drop(x, y) {
+    drop(player, dropX, dropY) {
+        const playerX = player.x;
+        const playerY = player.y;
         if (this.isPickedUp) {
             this.isPickedUp = false;
-            // Set new position
-            
-            
-            this.body.enable = true;
-            this.body.position.x = x - this.width/2;
-            this.body.position.y = y - this.height/2;
-            this.setPosition(x, y);
-            // Make visible if it was hidden
+            this.isDropping = true;
+            this.setPosition(playerX, playerY);
             this.setVisible(true);
+            this.setAlpha(1);
+            this.scene.tweens.add({
+                targets: this,
+                x: {
+                    getStart: () => playerX,
+                    getEnd: () => dropX,
+                },
+                y: {
+                    getStart: () => playerY,
+                    getEnd: () => dropY,
+                },
+                duration: 300,
+                ease: 'Quad.easeOut',
+                scale: 1,
+                onComplete: () => {
+                    this.scene.sound.play("drop");
+                    this.scene.tweens.add({
+                        targets: this,
+                        angle: {from: -30, to: 30},
+                        yoyo: true,
+                        duration: 200,
+                        repeat: 2,
+                        onComplete: () => {
+                            // Final snap to scale
+                            this.isDropping = false;
+                            this.setScale(1);
+                            // Set new position
+                            this.setPosition(dropX, dropY);
+                            this.body.enable = true;
+                            this.body.position.x = dropX;
+                            this.body.position.y = dropY;
+                            player.toggleReadyToDrop();
+                        }
+                    })}
+            });
 
-            if (this.type === "dynamic") {
-                this.setRandomMovement();
-            } 
-            
-            console.log(`${this.name} has been dropped`, this.body);
             return true;
         }
         return false;

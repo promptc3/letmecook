@@ -50,12 +50,53 @@ export class UIScene extends Phaser.Scene {
     for (let i=0; i < 9; i++) {
       const x = leftText + 10 + i * (tileSize*padding);
       const y = bottomText - (tileSize + padding);
-      const tile = this.add.image(x, y, "inventory", 7).setScale(1.5);
+      const tile = this.add.image(x, y, "inventory", 7)
+        .setScale(1.5)
+        .setInteractive()
+        .on("pointerdown", (pointer, localX, localY, event) => {
+          this.handleSelection(pointer)
+          event.stopPropagation();
+      });
+      const selectedTile = this.add.image(x, y, "selected", 0).setScale(1.5).setVisible(false);
       this.inventory.push({
         tile,
         item: null,
-        text: null
+        text: null,
+        itemName: "",
+        selected: false,
+        selectedTile: selectedTile 
       })
+    }
+  }
+
+  updateSelection(name) {
+    for (let i=0; i < 9; i++) {
+      const crntItemName = this.inventory[i].itemName;
+      if (crntItemName === name) {
+        this.inventory[i].selected = true;
+        this.inventory[i].selectedTile.setVisible(true);
+        this.events.emit('itemSelected', {name: this.inventory[i].itemName});
+      } else {
+        if (this.inventory[i].selected) {
+          this.inventory[i].selected = false;
+          this.inventory[i].selectedTile.setVisible(false);
+        }
+      }
+    }
+  }
+  handleSelection(pointer) {
+    for (let i=0; i < 9; i++) {
+      const bounds = this.inventory[i].tile.getBounds();
+      if (Phaser.Geom.Rectangle.Contains(bounds, pointer.x, pointer.y)) {
+        this.inventory[i].selected = true;
+        this.inventory[i].selectedTile.setVisible(true);
+        this.events.emit('itemSelected', {name: this.inventory[i].itemName});
+      } else {
+        if (this.inventory[i].selected) {
+          this.inventory[i].selected = false;
+          this.inventory[i].selectedTile.setVisible(false);
+        }
+      }
     }
   }
 
@@ -78,10 +119,28 @@ export class UIScene extends Phaser.Scene {
       const qtyText = this.add.text(tile.x + tile.width/4, tile.y + tile.height/4 - 5, `${quantity}`, fontConfig).setDepth(1);
       this.inventory[this.crntIndex].item = itemImg;
       this.inventory[this.crntIndex].text = qtyText;
+      this.inventory[this.crntIndex].itemName = name;
+      this.updateSelection(name);
       this.crntIndex += 1;
     }
   }
+  removeItemFromIventory(name) {
+    for (let i=0; i < 9; i++) {
+      const crntItemName = this.inventory[i].itemName;
+      if (crntItemName === name) {
+        console.info("Removing inv item from UI", name);
+        this.inventory[i].itemName = "";
+        this.inventory[i].item.destroy();
+        this.inventory[i].item = null;
+        this.inventory[i].text.destroy();
+        this.inventory[i].text = null;
+        this.inventory[i].selected = false;
+        this.inventory[i].selectedTile.setVisible(false);
+      }
+    }
+  }
   updateData(parent, key, data) {
+    console.info("[UIScene] Current Index: ", this.crntIndex);
     if (key === "powerups") {
       this.powerUpText.setText(`${data}`);
     } else if (key === "displayMessage") {
@@ -99,10 +158,15 @@ export class UIScene extends Phaser.Scene {
     } else if (key === "inventory") {
       const ingr = this.registry.get("recipe").ingredients;
       // for each item in inv hash get texture and add image
+      console.log("triggerd on drop of item", data)
       ingr.forEach(i => {
         const qty = data.get(i.name);
-        if (qty > 0) {
+        if (qty && qty > 0) {
           this.addItemToInventory(i.name, i.texture, qty);
+        } else if (qty === 0) {
+          this.invUi.delete(i.name);
+          this.crntIndex -= 1;
+          this.removeItemFromIventory(i.name);
         }
       })
     }
