@@ -140,7 +140,12 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     setName(name) {
-        this.nameUI = this.scene.add.text(this.x, this.y, `${name}`, {fontFamily: 'pixelFont', fontSize: '9px', fill: '#000' });
+        const fontConfig = {
+            fontFamily: 'pixelFont', 
+            fontSize: '9px',
+            fill: '#000'
+        }
+        this.nameUI = this.scene.add.text(this.x, this.y, `${name}`, fontConfig);
         this.name = name;
     }
 
@@ -173,7 +178,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.scene.events.emit('foodCollected', foodItem);
         if (item !== undefined){
             const newQty = item.quantity + 1;
-            // console.info(`[Player] Collected item: ${item.name} Qty: ${item.quantity}`);
+            // console.info(`[Player] Collected item: ${foodItem.name} Qty: ${item.quantity}`);
             this.inventory.set(foodItem.name, { quantity: newQty, obj: foodItem });
         } else {
             // console.info(`[Player] Collected item: ${foodItem.name} Qty: ${1}`);
@@ -251,7 +256,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     handleCollision() {
-        console.log('Collision detected!', 'Stunned: ', this.isStunned, 'Dashing: ', this.isDashing);
+        // console.log('Collision detected!', 'Stunned: ', this.isStunned, 'Dashing: ', this.isDashing);
         if (this.isDashing && !this.isStunned) {
             console.log('Stunned!');
             this.isStunned = true;
@@ -295,9 +300,18 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.nameUI.y = this.y - this.height/2;
     }
 
-    update(delta) {
-        const pointer = this.input.activePointer;
-        
+    setTargetLocation(x, y) {
+        this.targetX = x;
+        this.targetY = y;
+    }
+
+    checkAndStartDashing() {
+        if (!this.isDashing && (this.dashStart || this.readyToDrop)) return;
+        this.dashStart = this.scene.time.now;
+        this.createDashEffect();
+    }
+
+    update() {
         // Handle dash duration
         if (this.isDashing && this.scene.time.now - this.dashStart > this.dashDuration) {
             this.body.setVelocity(0, 0);
@@ -314,17 +328,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             this.body.velocity.y = 0;
         }
 
-        // Update movement target if mouse is held down
-        if (pointer.isDown) {
-            this.targetX = pointer.worldX;
-            this.targetY = pointer.worldY;
-            
-            if (this.isDashing && !this.dashStart && !this.readyToDrop) {
-                this.dashStart = this.scene.time.now;
-                this.createDashEffect();
-            }
-        }
-
         // Skip movement if there's no target or dash just ended
         if (this.targetX === undefined || this.targetY === undefined) {
             this.body.setVelocity(0, 0);
@@ -334,6 +337,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             this.updateText();
             return;
         }
+
+        this.checkAndStartDashing();
 
         // Movement logic
         const dx = this.targetX - this.x;

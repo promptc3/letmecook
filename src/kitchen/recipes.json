@@ -1,0 +1,14 @@
+{
+    "recipeBook": [
+        {
+            "utensil": "Pan",
+            "recipes": [
+                {
+                    "recipeKey": "vegCurry",
+                    "recipeName": "Veg Curry",
+                    "ingredientKey": "Onion-2|Ginger-2|Garlic-1|Potato-4|Carrot-2|Corn-2"
+                }
+            ]
+        }
+    ]
+}

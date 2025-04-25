@@ -14,7 +14,7 @@ const config = {
     height: window.innerHeight * window.devicePixelRatio,
     pixelArt: true,
     scene: [
-        Bootloader, Start, Game, GameOver, UIScene
+        Bootloader, Start, Game, UIScene, GameOver
     ],
     scale: {
         mode: Phaser.Scale.FIT,

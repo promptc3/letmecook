@@ -41,7 +41,8 @@ export class Game extends Phaser.Scene {
     this.registry.set('inventory', new Map());
     const tileset = this.map.addTilesetImage("Grass", "tiles");
     const biomTileset = this.map.addTilesetImage("Biom", "biomTiles");
-    this.groundLayer = this.map.createLayer("Background", tileset);
+    this.groundLayer = this.map.createLayer("Background", tileset)
+    .on('pointerdown', pointer => this.player.setTargetLocation(pointer.x, pointer.y));
     this.treeLayer = this.map.createLayer("Trees", biomTileset);
     this.treeLayer.setCollisionByProperty({ collides: true });
 
