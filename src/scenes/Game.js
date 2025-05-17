@@ -1,8 +1,9 @@
 import { Client, getStateCallbacks } from "colyseus.js";
-import Player from "../player/Player.js";
+import Player from "../characters/Player.js";
 import FoodItem from "../foodItems/FoodItem.js";
 import DashPickup from "../pickups/DashPickup.js";
 import MovingItem from "../foodItems/MovingItem.js";
+import BasicUtensil from "../kitchen/BasicUtensil.js";
 
 export class Game extends Phaser.Scene {
   constructor() {
@@ -46,6 +47,8 @@ export class Game extends Phaser.Scene {
     this.treeLayer = this.map.createLayer("Trees", biomTileset);
     this.treeLayer.setCollisionByProperty({ collides: true });
 
+    // utensils
+    this.pan = new BasicUtensil(this, 300, 350, 'pan', 'pan')
     // Create player
     this.player = new Player(this, 100, 100);
     this.player.setSizeToFrame(this.textures.get("player").frames[0]);
@@ -78,16 +81,20 @@ export class Game extends Phaser.Scene {
       Phaser.Input.Keyboard.KeyCodes.SPACE
     );
     this.powerupKey = this.input.keyboard.addKey(
-      Phaser.Input.Keyboard.KeyCodes.X
+      Phaser.Input.Keyboard.KeyCodes.Q
     );
 
     this.foodItems = this.add.group();
     this.movingItems = this.add.group(null, {runChildUpdate: true});
+
+    this.pan.setupCollisions(this);
+    this.physics.add.collider(this.player, this.pan.utensil);
     this.powerUps = this.add.group();
     this.registry.set('powerups', 0);
     // Set up player's danger zone to detect food items
     this.player.setupDangerZoneOverlap(this.foodItems, this.powerUps);
     this.setupEventListeners();
+
 
     // Create the circular drop zone
     this.createDropZone(500, 700, 50); // x, y, radius
@@ -429,6 +436,7 @@ export class Game extends Phaser.Scene {
         rotation: this.player.rotation,
       });
     }
+    this.pan.update();
   }
 
   // Display pickup message

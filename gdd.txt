@@ -2,39 +2,34 @@
 
 # Type - Web/Multiplayer
 
+# Genre - Survival (like "Don't Starve")
+
 # Core game loop
 Players will compete with each other to collect resources in a certain amount of time.
 
-World Overview
+# World Overview
 Players live in the world of Originals who demand sacrifice from the players.
 Their main objective in this world is to feed Originals and keep them satiated.
-If the players fail to feed Original they have to face Originals' wrath and die.
+If the players fail to feed Original they have to face Originals' "wrath" and die.
 
-
-# Game Modes
-* Non Believer Mode - Player play together to defeat the Original buy feeding them things they dislike.
-* Believer Mode -
-	1. Players have to search for certain sacrifices and the one to find all of them first wins.
-	2. Game goes on for certain amount of time after which all players start facing "wrath" of the Original.
-	3. In case if no player is able to find the items player with most number of items win.
 
 # Characters
 1. Original - God like creature that demand sacrifice. If not fed unleashes wrath upon players.
 There are different type of Original that demand different type of sacrifice every round.
-2. Wrath - Meteor shower over the map which kills all the players. Players still have option to escape it.
-After some time the intensity increases until the player can no longer keep up.
+2. Wrath - Enemies that can kill players, unleashed by originals. Like a meteor shower, zombies, slimes etc.
+Players have the option to escape it. After some time the intensity increases until the player can no longer keep up.
 3. Players - Can collect sacrifice, Stagger other players, Dash, Teleport etc.
-4. Sacrifices - Collectible items, can move also.
+4. Sacrifices - Collectible items, can move also like Chickens.
 5. Coins - Coins are collectibles that can compensate for absent sacrifices for the player.
 
-Original Name | Sacrifices (Inventory name - Holy Stash)                                  | Profane/Forbidden Items (Profane Stash)
---------------|---------------------------------------------------------------------------|------------------------------------------------------
-Sugar         | Milk, Candy, Icecream, Fruits, Cookies, Cakes, Hamster                    |   Sacrifices or holy items of other Originals
-Dreams        | Mushrooms, Wine, Soda, Fireflies, Fruits, Spiders, Unicorn bones          |   are disliked unless they have an item in common.
-Tank          | Milk, Cow, Chicken, Iron, Wood, Cat, Goat, Veggies, Golem core            |   Coins are never considered Profane by Originals.
-Fury          | Dog, Horse, Chicken, Pork, Soda, Ghosts, coal, black powder, gun powder   |
-Venom         | Goblin, Slime, Wood, Mushroom, Dragon egg                                 |
-
+# Detailed Game Loop
+* Map will have food items scattered all over the place.
+* Players will have to collect it and craft recipes at certain places in the map.
+* Map will have giant utensils. Player will drop their items to craft dishes.
+* Once they get the dish they will offer it to Original. A map will have just one Original.
+* Originals will have hunger meter which fills up once player drops dishes.
+* If hunger meter is not filled in certain amount of time Original unleashes wrath.
+* Last one surviving the game wins.
 
 
 
