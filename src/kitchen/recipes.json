@@ -6,7 +6,15 @@
                 {
                     "recipeKey": "vegCurry",
                     "recipeName": "Veg Curry",
-                    "ingredientKey": "Onion-2|Ginger-2|Garlic-1|Potato-4|Carrot-2|Corn-2"
+                    "ingredientKey": "Onion-2|Ginger-2|Garlic-1|Potato-4|Carrot-2|Corn-1",
+                    "ingredientList": [
+                        {"name": "Onion", "quantity": 2},
+                        {"name": "Ginger", "quantity": 2},
+                        {"name": "Garlic", "quantity": 1},
+                        {"name": "Potato", "quantity": 4},
+                        {"name": "Carrot", "quantity": 3},
+                        {"name": "Corn", "quantity": 1}
+                    ]
                 }
             ]
         }

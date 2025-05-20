@@ -165,7 +165,7 @@ export class UIScene extends Phaser.Scene {
           this.addItemToInventory(i.name, i.texture, qty);
         } else if (qty === 0) {
           this.invUi.delete(i.name);
-          this.crntIndex -= 1;
+          this.crntIndex = (this.crntIndex - 1 < 0) ? 0 : (this.crntIndex - 1);
           this.removeItemFromIventory(i.name);
         }
       })

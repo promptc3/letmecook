@@ -48,7 +48,7 @@ export class Game extends Phaser.Scene {
     this.treeLayer.setCollisionByProperty({ collides: true });
 
     // utensils
-    this.pan = new BasicUtensil(this, 300, 350, 'pan', 'pan')
+    this.pan = new BasicUtensil(this, 300, 350, 'pan', 'Pan')
     // Create player
     this.player = new Player(this, 100, 100);
     this.player.setSizeToFrame(this.textures.get("player").frames[0]);
@@ -84,7 +84,7 @@ export class Game extends Phaser.Scene {
       Phaser.Input.Keyboard.KeyCodes.Q
     );
 
-    this.foodItems = this.add.group();
+    this.foodItems = this.add.group(null, {runChildUpdate: true});
     this.movingItems = this.add.group(null, {runChildUpdate: true});
 
     this.pan.setupCollisions(this);
@@ -140,6 +140,13 @@ export class Game extends Phaser.Scene {
     uiScene.events.on("itemSelected", (data) => {
       this.selectedItem = data.name
     }, this)
+    this.events.on('cookRecipe', args => {
+      // filter out usedItems from foodItems and delete
+      if (!args.usedItems && args.usedItems.length <= 0) return;
+      args.usedItems.forEach(item => {
+        this.foodItems.remove(item);
+      })
+    }, this);
     this.events.on("powerUpCollected", (pickedItem) => {
       console.log(`Picked ${pickedItem.name}`);
       this.sound.play("pick");
@@ -375,6 +382,7 @@ export class Game extends Phaser.Scene {
         this.invHash.set(this.selectedItem, prevQty - 1);
         const newHash = this.invHash;
         this.registry.set('inventory', newHash);
+        console.info(`Player position before dropping: x${this.player.x} y: ${this.player.y}`);
         lastItem.drop(this.player, dropX, dropY);
         this.displayMessage(`Dropped ${this.selectedItem}`);
         // Send item drop to server
@@ -417,14 +425,7 @@ export class Game extends Phaser.Scene {
     if (pointer.isDown && this.player.readyToDrop) {
         const targetX = pointer.worldX;
         const targetY = pointer.worldY;
-        
-        const dx = targetX - this.player.x;
-        const dy = targetY - this.player.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const maxDistance = 400;
-        if (distance < maxDistance) {
-          this.dropItem(targetX, targetY);
-        }
+        this.dropItem(targetX, targetY);
     }
     if (
       this.room &&

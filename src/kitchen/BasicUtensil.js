@@ -11,6 +11,13 @@ export default class BasicUtensil extends Phaser.GameObjects.Container {
     this.switch.setScale(0.5);
     this.recipes = recipeBook.find((r) => r.utensil === name);
     this.playerOnSwitch = false;
+    this.prepItems = [];
+    scene.events.on('cookRecipe', args => this.handleCookRecipe(args), this);
+  }
+
+
+  handleCookRecipe(args) {
+    this.prepItems = [];
   }
 
   setupCollisions(scene) {
@@ -29,18 +36,22 @@ export default class BasicUtensil extends Phaser.GameObjects.Container {
       this
     );
   }
+
   onSwitchActivated() {
     if (!this.ready) {
-      console.info("Utensil is ready!");
+      // console.info("Utensil is ready!");
       this.readyToCook = true;
       this.switch.setFrame(0);
       this.playerOnSwitch = true;
+      this.scene.events.emit('switchOn', {"utensil": this.name, "prepItems": this.prepItems});
     }
   }
 
-  tryCook(foodItems, utensil) {
-    if (this.readyToCook && this.foodItems) {
-        this.cook(foodItems);
+  tryCook(foodItem, utensil) {
+    if (this.readyToCook && foodItem) {
+      const existingItem = this.prepItems.find(i => i.getId() === foodItem.getId())
+      if (existingItem) return;
+      this.prepItems.push(foodItem);
     }
   }
 
@@ -62,7 +73,9 @@ export default class BasicUtensil extends Phaser.GameObjects.Container {
       this.playerOnSwitch = false;
       this.readyToCook = false;
       this.switch.setFrame(1);
-      console.info("Utensil is no longer ready.");
+      this.scene.events.emit('switchOff', {"utensil": this.name});
+      // console.info("Utensil is no longer ready.");
     }
   }
 }
+

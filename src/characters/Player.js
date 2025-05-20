@@ -20,7 +20,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.lerpFactor = 0.1; // Controls how smoothly the player follows the cursor (0-1)
 
     // danger zone (2x the radius of the player)
-    this.dangerZone = scene.add.rectangle(x, y, 16, 24);
+    this.dangerZone = scene.add.rectangle(x, y, 60, 60);
     scene.physics.add.existing(this.dangerZone, false); // false = non-static body
 
     // Make danger zone not collide with anything physically
@@ -47,6 +47,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       A: Phaser.Input.Keyboard.KeyCodes.A,
       S: Phaser.Input.Keyboard.KeyCodes.S,
       D: Phaser.Input.Keyboard.KeyCodes.D,
+      F: Phaser.Input.Keyboard.KeyCodes.F
     });
 
     // Other properties
@@ -83,6 +84,17 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       loop: true,
     });
     this.setupFootstepSounds(scene);
+    scene.events.on('cookRecipe', args => this.handleCookRecipe(args), this);
+    scene.events.on('pickupFood', args => this.collectFoodItem(args), this);
+  }
+
+  handleCookRecipe(args) {
+    this.scene.tweens.add({
+        targets: this,
+        y: this.x + 50,
+        duration: 700,
+        ease: 'Linear'
+    });
   }
 
   setupFootstepSounds(scene) {
@@ -196,14 +208,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.name = name;
   }
 
+  getDangerZoneBounds() {
+    return this.dangerZone.getBounds();
+  }
+
   setupDangerZoneOverlap(foodItems, powerUps) {
-    this.scene.physics.add.overlap(
-      this.dangerZone,
-      foodItems,
-      this.collectFoodItem,
-      null,
-      this
-    );
     this.scene.physics.add.overlap(
       this.dangerZone,
       powerUps,
@@ -217,7 +226,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.readyToDrop = !this.readyToDrop;
   }
 
-  collectFoodItem(dangerZone, foodItem) {
+  collectFoodItem(foodItem) {
     // Add obstacle to inventory if not already collected
     const item = this.inventory.get(foodItem.name);
     // console.info(`[Player] Inventory:`, this.inventory);
