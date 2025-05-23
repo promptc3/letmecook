@@ -6,8 +6,8 @@ export default class BasicUtensil extends Phaser.GameObjects.Container {
     const { recipeBook } = recipeBookJson;
     this.name = name;
     this.readyToCook = false;
-    this.utensil = scene.physics.add.staticSprite(x, y, utensilTexture);
-    this.switch = scene.physics.add.sprite(x+70, y+30, "switch", 1);
+    this.utensil = scene.matter.add.sprite(x, y, utensilTexture);
+    this.switch = scene.matter.add.sprite(x+70, y+30, "switch", 1);
     this.switch.setScale(0.5);
     this.recipes = recipeBook.find((r) => r.utensil === name);
     this.playerOnSwitch = false;
@@ -20,22 +20,22 @@ export default class BasicUtensil extends Phaser.GameObjects.Container {
     this.prepItems = [];
   }
 
-  setupCollisions(scene) {
-    scene.physics.add.overlap(
-      scene.player,
-      this.switch,
-      this.onSwitchActivated,
-      null,
-      this
-    );
-    scene.physics.add.overlap(
-      scene.foodItems,
-      this.utensil,
-      this.tryCook,
-      null,
-      this
-    );
-  }
+  // setupCollisions(scene) {
+  //   scene.matter.add.overlap(
+  //     scene.player,
+  //     this.switch,
+  //     this.onSwitchActivated,
+  //     null,
+  //     this
+  //   );
+  //   scene.matter.add.overlap(
+  //     scene.foodItems,
+  //     this.utensil,
+  //     this.tryCook,
+  //     null,
+  //     this
+  //   );
+  // }
 
   onSwitchActivated() {
     if (!this.ready) {

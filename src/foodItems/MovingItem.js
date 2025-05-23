@@ -3,7 +3,7 @@ import FoodItem from "./FoodItem";
 export default class MovingItem extends FoodItem {
     constructor(scene, x, y, texture, name, type = "dynamic") {
         super(scene, x, y, texture, "chicken", "dynamic");
-        scene.physics.add.existing(this, false); // true = static body
+        scene.add.existing(this);
         this.currentDirection = 1;
         this.type = type;
         this.name = name;
@@ -29,7 +29,7 @@ export default class MovingItem extends FoodItem {
         this.restTime = 0;
         const zoneSize = 50;
         this.dangerZone = scene.add.zone(x, y).setSize(zoneSize * 2, zoneSize * 2);
-        scene.physics.world.enable(this.dangerZone);
+        // scene.matter.world.enable(this.dangerZone);
         this.playerInZone = false;
     }
     startWalking() {
@@ -38,9 +38,9 @@ export default class MovingItem extends FoodItem {
         this.playerInZone = false;
     }
     setupDangerZoneOverlap(player) {
-        this.scene.physics.add.overlap(
-            this.dangerZone, player, this.checkOverlapWithPlayer, null, this
-        )
+        // this.scene.matter.add.overlap(
+        //     this.dangerZone, player, this.checkOverlapWithPlayer, null, this
+        // )
     }
     checkOverlapWithPlayer(player, zone) {
         if (this.playerInZone) return;
@@ -71,14 +71,42 @@ export default class MovingItem extends FoodItem {
     }
     pickup() {
         if (!this.isPickedUp) {
-            this.isPickedUp = true;
-            this.body.enable = false;
-            this.setVisible(false);   
-            console.log(`${this.name} has been picked up by player`);
-            this.dangerZone.destroy();
-            if (this.walkTimer) {
-                this.walkTimer.remove();
-            }
+            const particleZone = new Phaser.Geom.Rectangle(0, 0, 16, 40);
+            this.particles = this.scene.add.particles(
+                this.x - 8,
+                this.y - 20,
+                "starParticle",
+                {
+                lifespan: 600,
+                scale: { start: 0.5, end: 0 },
+                alpha: { start: 1, end: 0 },
+                speed: { min: 20, max: 50 },
+                quantity: 10,
+                frequency: 50,
+                emitZone: {
+                    type: "random",
+                    source: particleZone,
+                },
+                blendMode: "SCREEN",
+                }
+            );
+            this.scene.tweens.add({
+                targets: this,
+                scale: { from: 1, to: 0.3 },
+                alpha: 0,
+                duration: 1100,
+                ease: "Back.easeOut",
+                onComplete: () => {
+                    this.isPickedUp = true;
+                    this.body.enable = false;
+                    this.setVisible(false);   
+                    console.log(`${this.name} has been picked up by player`);
+                    this.dangerZone.destroy();
+                    if (this.walkTimer) {
+                        this.walkTimer.remove();
+                    }
+                },
+            });
             return true;
         }
         return false;

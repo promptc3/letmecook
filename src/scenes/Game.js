@@ -1,5 +1,5 @@
 import { Client, getStateCallbacks } from "colyseus.js";
-import Player from "../characters/Player.js";
+import Player from "../characters/PlayerMatter.js";
 import FoodItem from "../foodItems/FoodItem.js";
 import DashPickup from "../pickups/DashPickup.js";
 import MovingItem from "../foodItems/MovingItem.js";
@@ -51,20 +51,11 @@ export class Game extends Phaser.Scene {
     this.pan = new BasicUtensil(this, 300, 350, 'pan', 'Pan')
     // Create player
     this.player = new Player(this, 100, 100);
-    this.player.setSizeToFrame(this.textures.get("player").frames[0]);
-    this.physics.add.collider(
-      this.player,
-      this.treeLayer,
-      this.handleCollision,
-      null,
-      this
-    );
-    this.physics.world.setBounds(
-      0,
-      0,
-      this.map.widthInPixels,
-      this.map.heightInPixels
-    );
+    // this.player.setSizeToFrame(this.textures.get("orange_playe").frames[0]);
+    this.playerCategory = this.matter.world.nextCategory();
+    this.foodItemCatefory = this.matter.world.nextCategory();
+    this.treeCategory = this.matter.world.nextCategory();
+    this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels, 32, true, true, true, true);
     
     this.cameras.main.setBounds(
       0,
@@ -87,12 +78,8 @@ export class Game extends Phaser.Scene {
     this.foodItems = this.add.group(null, {runChildUpdate: true});
     this.movingItems = this.add.group(null, {runChildUpdate: true});
 
-    this.pan.setupCollisions(this);
-    this.physics.add.collider(this.player, this.pan.utensil);
     this.powerUps = this.add.group();
     this.registry.set('powerups', 0);
-    // Set up player's danger zone to detect food items
-    this.player.setupDangerZoneOverlap(this.foodItems, this.powerUps);
     this.setupEventListeners();
 
 
@@ -198,11 +185,11 @@ export class Game extends Phaser.Scene {
         16,
         16
       );
-      this.physics.add.collider(
-        remotePlayer,
-        this.player,
-        this.handleCollision()
-      );
+      // this.matter.add.collider(
+      //   remotePlayer,
+      //   this.player,
+      //   this.handleCollision()
+      // );
       console.log(`Remote player ${player.name} joined`, player);
       remotePlayer.setName(player.name);
       remotePlayer.sessionId = sessionId;
@@ -313,24 +300,24 @@ export class Game extends Phaser.Scene {
     // Create a zone game object
     this.dropZone = this.add.zone(x, y, radius * 2, radius * 2);
 
-    // Set up the physics body for the zone
-    this.physics.world.enable(this.dropZone, Phaser.Physics.Arcade.STATIC_BODY);
+    // Set up the matter body for the zone
+    // this.matter.world.enable(this.dropZone, Phaser.Physics.Arcade.STATIC_BODY);
     const graphics = this.add.graphics({
       lineStyle: { width: 2, color: 0xa41fe0 },
     });
     graphics.strokeCircle(x, y, radius);
 
-    // Make the zone's physics body circular
-    this.dropZone.body.setCircle(radius);
+    // Make the zone's matter body circular
+    // this.dropZone.body.setCircle(radius);
 
     // Add overlap detection with the player
-    this.physics.add.overlap(
-      this.player,
-      this.dropZone,
-      this.handleDropZoneEnter,
-      null,
-      this
-    );
+    // this.matter.add.overlap(
+    //   this.player,
+    //   this.dropZone,
+    //   this.handleDropZoneEnter,
+    //   null,
+    //   this
+    // );
 
     return this.dropZone;
   }
@@ -357,7 +344,7 @@ export class Game extends Phaser.Scene {
         playerName: this.player.name,
         playDuration: Math.round(this.player.duration),
       });
-      this.physics.world.disable(zone);
+      this.matter.world.disable(zone);
       this.cameras.main.fadeOut(200, 0, 0, 0);
       this.cameras.main.once(
         Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,

@@ -4,6 +4,7 @@
     "colyseus.js": "^0.16.11",
     "lethimcook": "file:",
     "phaser": "^3.88.2",
+    "phaser-matter-collision-plugin": "^1.0.0",
     "phaser3-rex-plugins": "^1.80.15"
   },
   "name": "lethimcook",

@@ -1,16 +1,15 @@
-export default class DashPickup extends Phaser.Physics.Arcade.Sprite {
+export default class DashPickup extends Phaser.Physics.Matter.Sprite {
   constructor(scene, x, y) {
-    super(scene, x, y, 'dash-pickup');
+    super(scene.matter.world, x, y, 'dash-pickup');
     
     // Add this sprite to the scene
     scene.add.existing(this);
-    scene.physics.add.existing(this);
     
     this.setScale(window.devicePixelRatio / 2);
     this.id = "dash-pickup";
     this.name = "dash";
     // Setup physics properties
-    this.body.setAllowGravity(false);
+    this.setIgnoreGravity(true);
     // this.setScale(1);
     scene.tweens.add({
       targets: this,
@@ -30,6 +29,7 @@ export default class DashPickup extends Phaser.Physics.Arcade.Sprite {
   getId() {
     return this.id;
   }
+
   pickup() {
     // Play collect animation and destroy
     this.particles = this.scene.add.particles(this.x, this.y + 8, 'bubbleParticle',

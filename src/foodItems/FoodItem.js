@@ -1,6 +1,6 @@
-export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
+export default class FoodItem extends Phaser.Physics.Matter.Sprite {
   constructor(scene, x, y, texture, name = "food", type = "static") {
-    super(scene, x, y, texture);
+    super(scene.matter.world, x, y, texture);
     // Add the sprite to the scene
     scene.add.existing(this);
     this.name = name;
@@ -9,13 +9,11 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
     this.isCollectable = false;
 
     // Store reference to the scene
-    this.scene = scene;
     this.setInteractive();
     this.isDropping = false;
 
     // Generate a unique ID for this food item
     this._id = "food_" + Math.random().toString(36);
-    scene.physics.add.existing(this); // true = static body
     this.setupPointerEvents(scene);
     // this.debugGraphics = scene.add.graphics({ lineStyle: { width: 10, color: 0xffdd00, alpha: 0.5 } });
     // this.line = new Phaser.Geom.Line();
@@ -112,12 +110,9 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
     this.enableBody(true, playerX, playerY, true, true);
     this.setPosition(playerX, playerY);
     this.body.reset(playerX, playerY);
-    this.body.setAllowGravity(false);
-    this.body.setAllowDrag(true);
     this.setCollideWorldBounds(true);
     this.setDamping(true);
     this.setDrag(0.1,0.1);
-    this.setBounce(0, 1);
 
     const throwAngle = Phaser.Math.Angle.Between(
       playerX,
@@ -127,10 +122,10 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
     );
     // Phaser.Geom.Line.SetToAngle(this.line, playerX, playerY, throwAngle, 128);
     // this.debugGraphics.clear().strokeLineShape(this.line);
-    const newVel = this.scene.physics.velocityFromRotation(throwAngle, 250);
+    const newVel = this.scene.matter.applyForceFromAngle(throwAngle, 250);
     this.setRotation(throwAngle);
-    this.setVelocity(newVel.x, newVel.y);
-    console.info("New food item velocity", newVel)
+    // this.setVelocity(newVel.x, newVel.y);
+    // console.info("New food item velocity", newVel)
 
     // Optional: after a short delay, make the object static again
     this.scene.time.delayedCall(300, () => {
@@ -145,15 +140,9 @@ export default class FoodItem extends Phaser.Physics.Arcade.Sprite {
   }
 
   update() {
-    const player = this.scene.player;
-    const isFoodInDangerZone = Phaser.Geom.Intersects.RectangleToRectangle(
-      player.getDangerZoneBounds(),
+    this.isCollectable = Phaser.Geom.Intersects.RectangleToRectangle(
+      this.scene.player.getDangerZoneBounds(),
       this.getBounds()
     );
-    if (isFoodInDangerZone) {
-      this.isCollectable = true;
-    } else {
-      this.isCollectable = false;
-    }
   }
 }

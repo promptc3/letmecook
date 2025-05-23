@@ -1,13 +1,10 @@
-export default class Player extends Phaser.Physics.Arcade.Sprite {
+export default class Player extends Phaser.Physics.Matter.Sprite {
   constructor(scene, x, y) {
-    super(scene, x, y);
+    super(scene.matter.world, x, y);
 
     // Add this sprite to the scene
     scene.add.existing(this);
 
-    // Enable physics on this sprite
-    scene.physics.add.existing(this);
-    this.scene.physics.world.enable(this);
     // this.setSize(32, 48);
 
     // this.body.setCircle(radius, 0, 0);
@@ -21,7 +18,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     // danger zone (2x the radius of the player)
     this.dangerZone = scene.add.rectangle(x, y, 60, 60);
-    scene.physics.add.existing(this.dangerZone, false); // false = non-static body
+    scene.add.existing(this.dangerZone, false); // false = non-static body
 
     // Make danger zone not collide with anything physically
     this.dangerZone.body.setCollideWorldBounds(false);
@@ -196,6 +193,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       repeat: repeat,
     });
     this.anims.play("idle", true);
+    // this.setFrame('orange_player_idle',0)
   }
 
   setName(name) {
@@ -213,7 +211,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   setupDangerZoneOverlap(foodItems, powerUps) {
-    this.scene.physics.add.overlap(
+    this.scene.matter.add.overlap(
       this.dangerZone,
       powerUps,
       this.collectPowerUp,
@@ -329,7 +327,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       });
     } else {
       // console.log('stopping');
-      this.body.setVelocity(0, 0);
+      this.setVelocity(0, 0);
       this.walkTimer.paused = true;
     }
   }
@@ -372,6 +370,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   update() {
     let velocityX = 0;
     let velocityY = 0;
+    let crntDirectionIndex = 1;
 
     if (this.cursors.left.isDown || this.keys.A.isDown) velocityX = -1;
     else if (this.cursors.right.isDown || this.keys.D.isDown) velocityX = 1;
@@ -392,17 +391,18 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.moveSpeed = 200;
         this.dashStart = undefined;
         this.isDashing = false;
-        this.body.setVelocity(0, 0);
+        this.setVelocity(0, 0);
       }
     }
     if (isMoving) {
       const dir = new Phaser.Math.Vector2(velocityX, velocityY).normalize();
-      this.body.setVelocity(dir.x * this.moveSpeed, dir.y * this.moveSpeed);
+      this.setVelocity(dir.x * this.moveSpeed, dir.y * this.moveSpeed);
 
       // Set animation based on angle
       const angle = Math.atan2(dir.y, dir.x);
       const angleNormalized = (angle + Math.PI) / (Math.PI * 2);
       const directionIndex = Math.floor(angleNormalized * 8);
+      crntDirectionIndex = directionIndex;
       const directionKey = this.directionMap.get(directionIndex);
       // console.info('direction key: ', directionKey, ' direction Index: ', directionIndex);
       this.anims.play(`walk_${directionKey}`, true);
@@ -414,8 +414,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.createDashEffect();
       }
     } else {
-      this.body.setVelocity(0, 0);
-      this.anims.play("idle", true);
+      this.setVelocity(0, 0);
+      // this.anims.play("idle", true);
+      this.setFrame('orange_player_idle', crntDirectionIndex);
       this.walkTimer.paused = true;
     }
 
