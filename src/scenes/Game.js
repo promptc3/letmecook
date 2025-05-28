@@ -46,15 +46,16 @@ export class Game extends Phaser.Scene {
     .on('pointerdown', pointer => this.player.setTargetLocation(pointer.x, pointer.y));
     this.treeLayer = this.map.createLayer("Trees", biomTileset);
     this.treeLayer.setCollisionByProperty({ collides: true });
-
+    this.playerCategory = this.matter.world.nextCategory();
+    this.foodItemCategory = this.matter.world.nextCategory();
+    this.utensilSwitchCategory = this.matter.world.nextCategory();
+    this.dangerZoneCategory = this.matter.world.nextCategory();
+    this.dashPickupCategory = this.matter.world.nextCategory();
     // utensils
     this.pan = new BasicUtensil(this, 300, 350, 'pan', 'Pan')
     // Create player
     this.player = new Player(this, 100, 100);
     // this.player.setSizeToFrame(this.textures.get("orange_playe").frames[0]);
-    this.playerCategory = this.matter.world.nextCategory();
-    this.foodItemCatefory = this.matter.world.nextCategory();
-    this.treeCategory = this.matter.world.nextCategory();
     this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels, 32, true, true, true, true);
     
     this.cameras.main.setBounds(

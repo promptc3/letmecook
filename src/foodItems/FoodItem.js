@@ -7,6 +7,7 @@ export default class FoodItem extends Phaser.Physics.Matter.Sprite {
     this.type = type;
     this.isPickedUp = false;
     this.isCollectable = false;
+    this.label = "foodItem";
 
     // Store reference to the scene
     this.setInteractive();
@@ -15,6 +16,8 @@ export default class FoodItem extends Phaser.Physics.Matter.Sprite {
     // Generate a unique ID for this food item
     this._id = "food_" + Math.random().toString(36);
     this.setupPointerEvents(scene);
+    this.setCollisionCategory(scene.foodItemCategory);
+    this.setCollidesWith([scene.playerCategory, scene.dangerZoneCategory, scene.foodItemCategory]);
     // this.debugGraphics = scene.add.graphics({ lineStyle: { width: 10, color: 0xffdd00, alpha: 0.5 } });
     // this.line = new Phaser.Geom.Line();
   }
@@ -55,7 +58,11 @@ export default class FoodItem extends Phaser.Physics.Matter.Sprite {
   pickup() {
     if (!this.isPickedUp) {
       this.isPickedUp = true;
-      this.disableBody(true, true);
+      this.setActive(false);
+      this.setVisible(false);
+      if (this.body) {
+        this.setSensor(true);
+      }
       console.log(`${this.name} has been picked up by player`);
       // this.particles.setActive(true);
       const particleZone = new Phaser.Geom.Rectangle(0, 0, 16, 40);
@@ -107,7 +114,7 @@ export default class FoodItem extends Phaser.Physics.Matter.Sprite {
     this.setScale(1);
 
     // Configure physics body properties
-    this.enableBody(true, playerX, playerY, true, true);
+    // this.enableBody(true, playerX, playerY, true, true);
     this.setPosition(playerX, playerY);
     this.body.reset(playerX, playerY);
     this.setCollideWorldBounds(true);

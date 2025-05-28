@@ -12,34 +12,62 @@ export default class BasicUtensil extends Phaser.GameObjects.Container {
     this.recipes = recipeBook.find((r) => r.utensil === name);
     this.playerOnSwitch = false;
     this.prepItems = [];
-    scene.events.on('cookRecipe', args => this.handleCookRecipe(args), this);
-  }
+    if (this.switch.body) {
+      this.switch.body.label = "utensil-switch";
+      this.switch.body.gameObject = this.switch;
+      this.switch.body.isStatic = true;
+      this.switch.body.isSensor = true;
+      this.switch.setCollisionCategory(scene.utensilSwitchCategory);
+      this.switch.setCollidesWith([scene.playerCategory, scene.utensilSwitchCategory]);
+    }
+    if (this.utensil.body) {
+      this.utensil.body.label = "utensil-body";
+      this.utensil.body.gameObject = this.utensil;
+    }
 
+    scene.events.on('cookRecipe', args => this.handleCookRecipe(args), this);
+    this.setupCollisions(scene)
+  }
 
   handleCookRecipe(args) {
     this.prepItems = [];
   }
 
-  // setupCollisions(scene) {
-  //   scene.matter.add.overlap(
-  //     scene.player,
-  //     this.switch,
-  //     this.onSwitchActivated,
-  //     null,
-  //     this
-  //   );
-  //   scene.matter.add.overlap(
-  //     scene.foodItems,
-  //     this.utensil,
-  //     this.tryCook,
-  //     null,
-  //     this
-  //   );
-  // }
+  setupCollisions(scene) {
+    // Listen for Matter.js collision events
+    scene.matter.world.on("collisionstart", (event) => {
+      console.info("[basic utensil] Collision event started:", event);
+      event.pairs.forEach((pair) => {
+        const { bodyA, bodyB } = pair;
+
+        // Player steps on switch
+        console.info("[basic utensil] Collision detected between bodies:", bodyA, bodyB);
+        // console.info("[basic utensil] condition:", bodyA.gameObject === scene.player.body, bodyB.label === "utensil-switch");
+        console.info("[basic utensil] condition:", bodyB.gameObject === scene.player, bodyA.label === "utensil-switch");
+        if (
+          (bodyA.gameObject === scene.player && bodyB.label === "utensil-switch") ||
+          (bodyB.gameObject === scene.player && bodyA.label === "utensil-switch")
+        ) {
+          this.onSwitchActivated();
+        }
+
+        // Food item overlaps utensil
+        // Assuming food items are Phaser.Physics.Matter.Sprite with label "foodItem"
+        if (
+          (bodyA.label === "foodItem" && bodyB.label === "utensil-body") ||
+          (bodyB.label === "foodItem" && bodyA.label === "utensil-body")
+        ) {
+          const foodBody = bodyA.label === "foodItem" ? bodyA : bodyB;
+          const foodItem = foodBody.gameObject;
+          this.prepItems.push(foodItem);
+        }
+      });
+    });
+  }
 
   onSwitchActivated() {
     if (!this.ready) {
-      // console.info("Utensil is ready!");
+      console.info("Utensil is ready!");
       this.readyToCook = true;
       this.switch.setFrame(0);
       this.playerOnSwitch = true;
