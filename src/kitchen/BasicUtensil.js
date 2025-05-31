@@ -6,25 +6,41 @@ export default class BasicUtensil extends Phaser.GameObjects.Container {
     const { recipeBook } = recipeBookJson;
     this.name = name;
     this.readyToCook = false;
-    this.utensil = scene.matter.add.sprite(x, y, utensilTexture);
-    this.switch = scene.matter.add.sprite(x+70, y+30, "switch", 1);
+    this.utensil = scene.add.sprite(x, y, utensilTexture);
+    this.utensil.setDepth(2);
+    this.switch = scene.add.sprite(x+70, y+30, "switch", 1);
     this.switch.setScale(0.5);
+    this.switch.setDepth(0);
     this.recipes = recipeBook.find((r) => r.utensil === name);
     this.playerOnSwitch = false;
     this.prepItems = [];
-    if (this.switch.body) {
-      this.switch.body.label = "utensil-switch";
-      this.switch.body.gameObject = this.switch;
-      this.switch.body.isStatic = true;
-      this.switch.body.isSensor = true;
-      this.switch.setCollisionCategory(scene.utensilSwitchCategory);
-      this.switch.setCollidesWith([scene.playerCategory, scene.utensilSwitchCategory]);
-    }
-    if (this.utensil.body) {
-      this.utensil.body.label = "utensil-body";
-      this.utensil.body.gameObject = this.utensil;
-    }
-
+    const switchBody = Phaser.Physics.Matter.Matter.Bodies.rectangle(
+      x + 69, y + 29, // position
+      44, 44,         // width, height (adjust as needed)
+      {
+        isStatic: true,
+        isSensor: true,
+        label: "utensil-switch"
+      }
+    );
+    scene.matter.world.add(switchBody);
+    this.switchPhysics = switchBody;
+    this.switchPhysics.collisionFilter.category = scene.utensilSwitchCategory;
+    this.switchPhysics.collisionFilter.mask = scene.playerCategory;
+    this.switchPhysics.gameObject = this; // Reference to this utensil if needed
+    const circle = Phaser.Physics.Matter.Matter.Bodies.circle(
+      x, y - 64, // x, y position of the circle's center
+      57,
+      {
+        isStatic: true,
+        label: "utensil-body",
+      }
+    );
+    scene.matter.world.add(circle);
+    this.utensilPhysics = circle;
+    this.utensilPhysics.collisionFilter.category = scene.utensilCategory;
+    this.utensilPhysics.collisionFilter.mask = scene.playerCategory;
+    this.utensilPhysics.gameObject = this; // Reference to this utensil if needed
     scene.events.on('cookRecipe', args => this.handleCookRecipe(args), this);
     this.setupCollisions(scene)
   }

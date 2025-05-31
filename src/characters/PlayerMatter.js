@@ -30,7 +30,8 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
 
     this.setCollisionCategory(scene.playerCategory);
     this.setCollidesWith([scene.foodItemCategory, scene.playerCategory,
-         scene.dashPickupCategory, scene.utensilSwitchCategory, scene.dangerZoneCategory]);
+         scene.dashPickupCategory, scene.utensilSwitchCategory, scene.dangerZoneCategory,
+        scene.utensilCategory]);
     // Adapt categories as per your game's collision needs.
 
     // Movement properties
