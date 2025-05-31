@@ -4,8 +4,8 @@
             "utensil": "Pan",
             "recipes": [
                 {
-                    "recipeKey": "vegCurry",
-                    "recipeName": "Veg Curry",
+                    "recipeKey": "onigiri",
+                    "recipeName": "Onigiri",
                     "ingredientKey": "Onion-2|Ginger-2|Garlic-1|Potato-4|Carrot-2|Corn-1",
                     "ingredientList": [
                         {"name": "Onion", "quantity": 2},

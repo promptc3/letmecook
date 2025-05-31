@@ -156,9 +156,10 @@ export class UIScene extends Phaser.Scene {
         }
       })
     } else if (key === "inventory") {
-      const ingr = this.registry.get("recipe").ingredients;
+      const ingr = this.registry.get("ingredients");
       // for each item in inv hash get texture and add image
-      console.log("triggerd on drop of item", data)
+      // console.log("triggerd on drop of item", data)
+      console.info("[UIScene] Inventory data: ", data, " Ingredients: ", ingr);
       ingr.forEach(i => {
         const qty = data.get(i.name);
         if (qty && qty > 0) {

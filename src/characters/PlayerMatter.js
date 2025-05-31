@@ -94,7 +94,6 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
       loop: true,
     });
     this.setupFootstepSounds(scene);
-    scene.events.on("cookRecipe", (args) => this.handleCookRecipe(args), this);
     scene.events.on("pickupFood", (args) => this.collectFoodItem(args), this);
 
     // --- Matter.js Collision Event Listener for the Player ---
@@ -108,7 +107,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
   // New Matter.js specific collision handler
   handleMatterCollision(event, bodyA, bodyB) {
     // Check if the current player's body is one of the colliding bodies
-    console.info("[player] Collision detected between bodies:", bodyA, bodyB);
+    // console.info("[player] Collision detected between bodies:", bodyA, bodyB);
     if (
       (bodyA === this.dangerZone && bodyB.label === "dash-pickup") ||
       (bodyB === this.dangerZone && bodyA.label === "dash-pickup")
@@ -123,17 +122,17 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     }
   }
 
-  handleCookRecipe(args) {
+  handleCookRecipe(foodItem) {
     this.scene.tweens.add({
       targets: this,
       onStart: () => {
         this.setVelocityY(-50); // Small upward velocity
       },
-      y: this.y - 50, // Move player up by 50 units
       duration: 350, // Shorter duration for a quick effect
       ease: "Sine.easeOut", // More natural jump curve
       yoyo: true, // Go back down
     });
+    this.collectFoodItem(foodItem);
   }
 
   setupFootstepSounds(scene) {
@@ -263,11 +262,11 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
 
   collectFoodItem(foodItem) {
     // Add obstacle to inventory if not already collected
-    const item = this.inventory.get(foodItem.name);
+    const existingItem = this.inventory.get(foodItem.name);
     // console.info(`[Player] Inventory:`, this.inventory);
     this.scene.events.emit("foodCollected", foodItem);
-    if (item !== undefined) {
-      const newQty = item.quantity + 1;
+    if (existingItem !== undefined) {
+      const newQty = existingItem.quantity + 1;
       // console.info(`[Player] Collected item: ${foodItem.name} Qty: ${item.quantity}`);
       this.inventory.set(foodItem.name, { quantity: newQty, obj: foodItem });
     } else {

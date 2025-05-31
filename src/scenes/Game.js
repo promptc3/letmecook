@@ -9,17 +9,15 @@ export class Game extends Phaser.Scene {
   constructor() {
     super({ key: "Game" });
     this.map = null;
-    this.recipe = {
-      name: "Veg Curry",
-      ingredients: [
+    this.ingredients = [
         { name: "Carrot", quantity: "3", texture: "vegetable_carrot" },
         { name: "Corn", quantity: "1", texture: "vegetable_corn" },
         { name: "Potato", quantity: "2", texture: "vegetable_potato" },
         { name: "Garlic", quantity: "4", texture: "vegetable_garlic" },
         { name: "Ginger", quantity: "2", texture: "vegetable_ginger" },
         { name: "Onion", quantity: "1", texture: "vegetable_onion" },
-      ],
-    };
+        { name: "Onigiri", quantity: "1", texture: "onigiri" },
+      ];
     this.invHash = new Map();
     // new Client
     this.client = null;
@@ -38,7 +36,7 @@ export class Game extends Phaser.Scene {
       console.error("Failed to load map", error);
     }
     this.input.setDefaultCursor('url(./../assets/UI/spriteSheets/mouseSprites/Catpaw-pointing-Mouse-icon.cur), pointer');
-    this.registry.set('recipe', this.recipe);
+    this.registry.set('ingredients', this.ingredients);
     this.registry.set('inventory', new Map());
     const tileset = this.map.addTilesetImage("Grass", "tiles");
     const biomTileset = this.map.addTilesetImage("Biom", "biomTiles");
@@ -129,11 +127,24 @@ export class Game extends Phaser.Scene {
       this.selectedItem = data.name
     }, this)
     this.events.on('cookRecipe', args => {
+      // args = {recipeKey, recipeName, usedItems}
+      console.info("Cooking recipe: ", args.recipeKey, args.recipeName);
       // filter out usedItems from foodItems and delete
       if (!args.usedItems && args.usedItems.length <= 0) return;
       args.usedItems.forEach(item => {
         this.foodItems.remove(item);
       })
+      // add a new item
+      const cookedItem = new FoodItem(
+        this,
+        this.player.x,
+        this.player.y,
+        args.recipeKey,
+        args.recipeName
+      );
+      this.foodItems.add(cookedItem);
+      this.player.handleCookRecipe(cookedItem);
+      this.displayMessage(`Cooked ${args.recipeName}`);
     }, this);
     this.events.on("powerUpCollected", (pickedItem) => {
       console.log(`Picked ${pickedItem.name}`);
@@ -324,7 +335,7 @@ export class Game extends Phaser.Scene {
   }
   checkIngredients() {
     let flag = true;
-    this.recipe.ingredients.every((i) => {
+    this.ingredients.every((i) => {
       const crntQty = this.invHash.get(i.name);
       if (crntQty < i.quantity) {
         flag = false;

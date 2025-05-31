@@ -18,6 +18,9 @@ export default class FoodItem extends Phaser.Physics.Matter.Sprite {
     this.setupPointerEvents(scene);
     this.setCollisionCategory(scene.foodItemCategory);
     this.setCollidesWith([scene.playerCategory, scene.dangerZoneCategory, scene.foodItemCategory]);
+    this.setMass(3);
+    this.setFriction(0.4, 0.05);
+    this.setBounce(0.2);
     // this.debugGraphics = scene.add.graphics({ lineStyle: { width: 10, color: 0xffdd00, alpha: 0.5 } });
     // this.line = new Phaser.Geom.Line();
   }

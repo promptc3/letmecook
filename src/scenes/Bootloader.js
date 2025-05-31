@@ -41,6 +41,7 @@ export class Bootloader extends Phaser.Scene {
     vegetables.forEach(item => {
         this.load.image(item, `./../assets/food/${item}.png`);
     });
+    this.load.image('onigiri', './../assets/food/onigiri_3.png');
     const fruits = ["fruit_apple", "fruit_banana", "fruit_cherry", "fruit_greengrape", "fruit_kiwi", "fruit_lemon", "fruit_lime", "fruit_orange", "fruit_peach", "fruit_strawberry", "fruit_watermelon"];
     fruits.forEach(item => {
         this.load.image(item, `./../assets/food/${item}.png`);

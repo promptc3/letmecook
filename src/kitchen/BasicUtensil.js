@@ -36,14 +36,14 @@ export default class BasicUtensil extends Phaser.GameObjects.Container {
   setupCollisions(scene) {
     // Listen for Matter.js collision events
     scene.matter.world.on("collisionstart", (event) => {
-      console.info("[basic utensil] Collision event started:", event);
+      // console.info("[basic utensil] Collision event started:", event);
       event.pairs.forEach((pair) => {
         const { bodyA, bodyB } = pair;
 
         // Player steps on switch
-        console.info("[basic utensil] Collision detected between bodies:", bodyA, bodyB);
-        // console.info("[basic utensil] condition:", bodyA.gameObject === scene.player.body, bodyB.label === "utensil-switch");
-        console.info("[basic utensil] condition:", bodyB.gameObject === scene.player, bodyA.label === "utensil-switch");
+        // console.info("[basic utensil] Collision detected between bodies:", bodyA, bodyB);
+        // // console.info("[basic utensil] condition:", bodyA.gameObject === scene.player.body, bodyB.label === "utensil-switch");
+        // console.info("[basic utensil] condition:", bodyB.gameObject === scene.player, bodyA.label === "utensil-switch");
         if (
           (bodyA.gameObject === scene.player && bodyB.label === "utensil-switch") ||
           (bodyB.gameObject === scene.player && bodyA.label === "utensil-switch")

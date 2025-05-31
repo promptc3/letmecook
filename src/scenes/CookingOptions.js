@@ -67,6 +67,7 @@ export class CookingOptions extends Phaser.Scene {
           fontFamily: "pixelFont",
           fill: "#ffffff",
           backgroundColor: "#000000",
+          padding: { x: 10, y: 5 },
         })
         .setInteractive();
 
@@ -99,7 +100,7 @@ export class CookingOptions extends Phaser.Scene {
 
     // Highlight selected
     this.recipeTexts.forEach((text, i) => {
-      text.setStyle({ fill: i === index ? "#ffff00" : "#ffffff" });
+      text.setStyle({ fill: i === index ? "#ffff00" : "#ffffff", backgroundColor: i === index ? "#1e1e1e" : "#000000" });
     });
   }
 
