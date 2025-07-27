@@ -119,10 +119,10 @@ export default class FoodItem extends Phaser.Physics.Matter.Sprite {
     // Configure physics body properties
     // this.enableBody(true, playerX, playerY, true, true);
     this.setPosition(playerX, playerY);
-    this.body.reset(playerX, playerY);
-    this.setCollideWorldBounds(true);
-    this.setDamping(true);
-    this.setDrag(0.1,0.1);
+    // this.body.reset(playerX, playerY);
+    // this.setCollideWorldBounds(true);
+    // this.setDamping(true);
+    // this.setDrag(0.1,0.1);
 
     const throwAngle = Phaser.Math.Angle.Between(
       playerX,
@@ -132,7 +132,14 @@ export default class FoodItem extends Phaser.Physics.Matter.Sprite {
     );
     // Phaser.Geom.Line.SetToAngle(this.line, playerX, playerY, throwAngle, 128);
     // this.debugGraphics.clear().strokeLineShape(this.line);
-    const newVel = this.scene.matter.applyForceFromAngle(throwAngle, 250);
+    // Calculate force vector from angle and magnitude
+    const forceMagnitude = 0.02; // Adjust as needed for your game feel
+    const force = {
+      x: Math.cos(throwAngle) * forceMagnitude,
+      y: Math.sin(throwAngle) * forceMagnitude
+    };
+    // Apply force to the Matter body
+    this.scene.matter.body.applyForce(this.body, { x: playerX, y: playerY }, force);
     this.setRotation(throwAngle);
     // this.setVelocity(newVel.x, newVel.y);
     // console.info("New food item velocity", newVel)

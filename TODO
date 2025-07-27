@@ -8,8 +8,7 @@
 ✔ Add stun @done(25-03-29 17:34)
 ✔ Add game over screen with scoreboard for multiplayer @done(25-03-29 18:40)
 ✔ Show dash amount in the game over screen @done(25-04-01 20:26)
-☐ Complete cooking mechanism
-☐ Add matter.js physics based collision
-☐ Host the game on a server
-☐ Create a player join screen with name input, create room, and join room options
-☐ Create a waiting room screen with player list and start game button
+✔ Complete cooking mechanism @done(25-05-31 21:45)
+✔ Add matter.js physics based collision @done(25-05-31 21:45)
+☐ Add Original and player feeding mechanism for original
+☐ Add wrath mechanism for Original
