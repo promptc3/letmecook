@@ -21,12 +21,12 @@ export class MyRoom extends Room<MyRoomState> {
   recipe: Recipe = {
       name: "Veg Curry",
       ingredients: [
-          {name: "Carrot", quantity: "3", texture: "vegetable_carrot"},
-          {name: "Corn", quantity: "1", texture: "vegetable_corn"},
-          {name: "Potato", quantity: "2", texture: "vegetable_potato"},
-          {name: "Garlic", quantity: "4", texture: "vegetable_garlic"},
-          {name: "Ginger", quantity: "2", texture: "vegetable_ginger"},
-          {name: "Onion", quantity: "1", texture: "vegetable_onion"}
+        { name: "Carrot", quantity: "3", texture: "vegetable_carrot" },
+        { name: "Corn", quantity: "1", texture: "vegetable_corn" },
+        { name: "Potato", quantity: "2", texture: "vegetable_potato" },
+        { name: "Brinjal", quantity: "4", texture: "vegetable_brinjal" },
+        { name: "Tomato", quantity: "2", texture: "vegetable_tomato" },
+        { name: "Onion", quantity: "1", texture: "vegetable_onion" },
   ]}
   foodItems: FoodItem[] = []; 
   powerUps: PowerUp[] = [];
