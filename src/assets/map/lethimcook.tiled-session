@@ -1,0 +1,41 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "first_map.tmx",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "first_map.tmx": {
+            "scale": 0.19989583333333333,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 917.9781136008337,
+                "y": 1918.4992183428872
+            }
+        },
+        "first_map.tmx#background": {
+            "scaleInDock": 1
+        }
+    },
+    "last.exportedFilePath": "C:/Users/sausau/Documents/lethimcook/src/assets/map",
+    "last.imagePath": "C:/Users/sausau/Documents/lethimcook/src/assets/tilesets",
+    "map.height": 30,
+    "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 128,
+    "map.tileWidth": 128,
+    "openFiles": [
+        "first_map.tmx"
+    ],
+    "project": "lethimcook.tiled-project",
+    "recentFiles": [
+        "first_map.tmx"
+    ],
+    "tileset.embedInMap": true,
+    "tileset.tileSize": {
+        "height": 128,
+        "width": 128
+    }
+}

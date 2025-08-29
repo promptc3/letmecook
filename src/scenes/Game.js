@@ -13,10 +13,9 @@ export class Game extends Phaser.Scene {
         { name: "Carrot", quantity: "3", texture: "vegetable_carrot" },
         { name: "Corn", quantity: "1", texture: "vegetable_corn" },
         { name: "Potato", quantity: "2", texture: "vegetable_potato" },
-        { name: "Garlic", quantity: "4", texture: "vegetable_garlic" },
-        { name: "Ginger", quantity: "2", texture: "vegetable_ginger" },
+        { name: "Brinjal", quantity: "4", texture: "vegetable_brinjal" },
+        { name: "Tomato", quantity: "2", texture: "vegetable_tomato" },
         { name: "Onion", quantity: "1", texture: "vegetable_onion" },
-        { name: "Onigiri", quantity: "1", texture: "onigiri" },
       ];
     this.invHash = new Map();
     // new Client
@@ -38,12 +37,8 @@ export class Game extends Phaser.Scene {
     this.input.setDefaultCursor('url(./../assets/UI/spriteSheets/mouseSprites/Catpaw-pointing-Mouse-icon.cur), pointer');
     this.registry.set('ingredients', this.ingredients);
     this.registry.set('inventory', new Map());
-    const tileset = this.map.addTilesetImage("Grass", "tiles");
-    const biomTileset = this.map.addTilesetImage("Biom", "biomTiles");
-    this.groundLayer = this.map.createLayer("Background", tileset)
-    .on('pointerdown', pointer => this.player.setTargetLocation(pointer.x, pointer.y));
-    this.treeLayer = this.map.createLayer("Trees", biomTileset);
-    this.treeLayer.setCollisionByProperty({ collides: true });
+    const groundTileset = this.map.addTilesetImage("background", "bgtiles");
+    this.groundLayer = this.map.createLayer("Background", groundTileset)
     this.playerCategory = this.matter.world.nextCategory();
     this.foodItemCategory = this.matter.world.nextCategory();
     this.utensilCategory = this.matter.world.nextCategory();
@@ -64,7 +59,7 @@ export class Game extends Phaser.Scene {
       this.map.widthInPixels,
       this.map.heightInPixels
     );
-    this.cameras.main.setZoom(3);
+    this.cameras.main.setZoom(1);
     this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
 
 
@@ -85,7 +80,7 @@ export class Game extends Phaser.Scene {
 
 
     // Create the circular drop zone
-    this.createDropZone(500, 700, 50); // x, y, radius
+    this.createDropZone(1000, 700, 50); // x, y, radius
 
     this.playerName = "Player " + Math.floor(Math.random() * 100);
     this.player.setName(this.playerName);
@@ -320,6 +315,7 @@ export class Game extends Phaser.Scene {
       lineStyle: { width: 2, color: 0xa41fe0 },
     });
     graphics.strokeCircle(x, y, radius);
+    this.add.image(x, y, 'cave');
 
     // Make the zone's matter body circular
     // this.dropZone.body.setCircle(radius);

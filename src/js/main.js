@@ -14,7 +14,7 @@ const config = {
     parent: 'game-container',
     width: window.innerWidth * window.devicePixelRatio,
     height: window.innerHeight * window.devicePixelRatio,
-    pixelArt: true,
+    pixelArt: false,
     scene: [
         Bootloader, Start, Game, UIScene, CookingOptions, GameOver
     ],

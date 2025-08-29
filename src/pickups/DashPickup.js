@@ -17,7 +17,7 @@ export default class DashPickup extends Phaser.Physics.Matter.Sprite {
     }
     this.setCollisionCategory(scene.dashPickupCategory);
     this.setCollidesWith([scene.playerCategory, scene.dangerZoneCategory, scene.dashPickupCategory]);
-    this.setScale(window.devicePixelRatio / 2);
+    // this.setScale(window.devicePixelRatio / 2);
     this.once("addedtoscene", () => {
       scene.tweens.add({
         targets: this,

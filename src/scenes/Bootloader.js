@@ -26,26 +26,25 @@ export class Bootloader extends Phaser.Scene {
   }
 
   loadImages() {
-    this.load.image('background', './../assets/space.png');
     this.load.image('start-button', './../assets/start-button.png');
-    this.load.image('dash-pickup', './../assets/food/soda_coke.png');
-    this.load.image('rabbit', './../assets/hexagon-gray.png');
-    this.load.tilemapTiledJSON('map', './../assets/sproutMap.tmj');
-    this.load.image('tiles', './../assets/Tilesets/Grass.png');
-    this.load.image('biomTiles', './../assets/objects/Basic_Grass_Biom_things.png');
+    this.load.image('dash-pickup', './../assets/food/PinkPotion.png');
+    this.load.tilemapTiledJSON('map', './../assets/map/first_map.tmj');
+    this.load.image('bgtiles', './../assets/tilesets/background.png');
+    this.load.image('grasstiles', './../assets/tilesets/Grass.png');
+    this.load.image('stonetiles', './../assets/tilesets/Stones.png');
     this.load.image('retry-button', '../assets/retry-button.png');
     this.load.image('starParticle', '../assets/elements/star.png');
     this.load.image('bubbleParticle', '../assets/elements/bubble.png');
-    this.load.image('pan', './../assets/objects/topdown-pan.png');
+    this.load.image('pan', './../assets/objects/Pan.png');
+    this.load.image('cave', './../assets/objects/Cave.png');
     this.load.json('pan-shape', './../assets/objects/pan-shape.json');
-    const vegetables = ["vegetable_bellpepper_green", "vegetable_carrot", "vegetable_corn", "vegetable_cucumber", "vegetable_eggplant", "vegetable_onion", "vegetable_potato", "vegetable_tomato", "vegetable_garlic", "vegetable_ginger", "vegetable_bellpepper_red","vegetable_bellpepper_yellow", "vegetable_pumpkin"];
+    const vegetables = ["brinjal", "capsicum", "carrot", "corn", "mushroom", "onion", "potato", "tomato"];
     vegetables.forEach(item => {
-        this.load.image(item, `./../assets/food/${item}.png`);
+        this.load.image(`vegetable_${item}`, `./../assets/food/vegetable_${item}.png`);
     });
-    this.load.image('onigiri', './../assets/food/onigiri_3.png');
-    const fruits = ["fruit_apple", "fruit_banana", "fruit_cherry", "fruit_greengrape", "fruit_kiwi", "fruit_lemon", "fruit_lime", "fruit_orange", "fruit_peach", "fruit_strawberry", "fruit_watermelon"];
+    const fruits = ["apple", "banana", "grape", "orange"];
     fruits.forEach(item => {
-        this.load.image(item, `./../assets/food/${item}.png`);
+        this.load.image(`fruit_${item}`, `./../assets/food/fruit_${item}.png`);
     });
     this.load.spritesheet('orange_player_idle', './../assets/characters/Orange/orange_8direction_standing-Sheet.png', {
       frameWidth: 32,

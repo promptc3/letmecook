@@ -8,7 +8,6 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     // this.setSize(32, 48);
 
     // this.body.setCircle(radius, 0, 0);
-    this.setScale(0.5);
     // this.body.setGravity(false);
     // this.body.setCollideWorldBounds(false);
 

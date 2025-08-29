@@ -1,0 +1,31 @@
+{
+    "gameTitle": "Let Him Cook",
+    "version": "1.0.0",
+    "author": "Saumyajeet",
+    "client": {
+        "url": "http://localhost",
+        "port": 2567
+    },
+    "map": {
+        "width": 800,
+        "height": 600,
+        "tileWidth": 32,
+        "tileHeight": 32,
+        "cameraZoom": 1.0
+    },
+    "keyBindings": {
+        "moveLeft": "ArrowLeft",
+        "moveRight": "ArrowRight",
+        "moveUp": "ArrowUp",
+        "moveDown": "ArrowDown",
+        "drop": "SPACE"
+    },
+    "player": {
+        "initialX": 400,
+        "initialY": 300,
+        "height": 64,
+        "width": 64,
+        "speed": 200,
+        "health": 100
+    }
+}
