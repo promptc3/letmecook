@@ -4,6 +4,8 @@ import FoodItem from "../foodItems/FoodItem.js";
 import DashPickup from "../pickups/DashPickup.js";
 import MovingItem from "../foodItems/MovingItem.js";
 import BasicUtensil from "../kitchen/BasicUtensil.js";
+import Original from "../characters/Original.js";
+import Wrath from "../characters/Wrath.js";
 
 export class Game extends Phaser.Scene {
   constructor() {
@@ -50,6 +52,8 @@ export class Game extends Phaser.Scene {
     this.player.setDepth(1);
     // utensils
     this.pan = new BasicUtensil(this, 300, 350, 'pan', 'Pan')
+    // Original
+    this.original = new Original(this, 700, 900, 'mushroomMan', 'Original');
     // this.player.setSizeToFrame(this.textures.get("orange_playe").frames[0]);
     this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels, 32, true, true, true, true);
     
@@ -73,6 +77,7 @@ export class Game extends Phaser.Scene {
 
     this.foodItems = this.add.group(null, {runChildUpdate: true});
     this.movingItems = this.add.group(null, {runChildUpdate: true});
+    this.wraths = this.add.group(null, {runChildUpdate: true});
 
     this.powerUps = this.add.group();
     this.registry.set('powerups', 0);
@@ -302,6 +307,15 @@ export class Game extends Phaser.Scene {
     // Listen for player left message
     this.room.onMessage("playerLeft", (data) => {
       this.displayMessage(`${data.playerName} left the game!`);
+    });
+
+    // Listen for wrath spawn message
+    this.room.onMessage("wrathSpawned", (data) => {
+      const { wrathId, x, y } = data;
+      console.log(`Wrath spawned: ${wrathId} at (${x}, ${y})`)
+      // spawn a wrath locally
+      const newWrath = new Wrath(this, x, y, 'mushroomChild', wrathId);
+      this.wraths.add(newWrath);
     });
   }
 
