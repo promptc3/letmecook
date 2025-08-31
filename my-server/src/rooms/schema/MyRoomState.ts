@@ -28,9 +28,19 @@ export class FoodItem extends Schema {
   @type("boolean") static = true;
   @type("boolean") isPickedUp = false;
 }
+export class Wrath extends Schema {
+  @type("string") id = "";
+  @type("number") x = 0;
+  @type("number") y = 0;
+  @type("number") rotation = 0;
+  @type("string") name = "";
+  @type("boolean") isAlive = true;
+}
 export class MyRoomState extends Schema {
   @type({ map: Player }) players = new MapSchema<Player>();
   @type({ map: FoodItem }) foodItems = new MapSchema<FoodItem>();
   @type({ map: PowerUp }) powerUps = new MapSchema<PowerUp>();
   @type({ map: Score }) scoreBoard = new MapSchema<Score>();
+  @type({ map: Wrath }) wraths = new MapSchema<Wrath>();
+  @type("number") rateOfSpawn = 3000; // default spawn rate of wrath in ms
 }

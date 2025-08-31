@@ -1,5 +1,5 @@
 import { Room, Client } from "@colyseus/core";
-import { MyRoomState, Player, FoodItem, PowerUp, Score } from "./schema/MyRoomState";
+import { MyRoomState, Player, FoodItem, PowerUp, Wrath, Score } from "./schema/MyRoomState";
 
 interface RecipeIngredient {
   name: string;
@@ -97,6 +97,18 @@ export class MyRoom extends Room<MyRoomState> {
         this.state.scoreBoard.set(client.sessionId, playerScore);
       }
     });
+
+    this.clock.setInterval(() => {
+      const newWrath = new Wrath();
+      newWrath.id = 'wrath_' + Math.random().toString(36);
+      newWrath.name = "wrath";
+      newWrath.x = Math.random()*this.mapWidth;
+      newWrath.y = Math.random()*this.mapHeight;
+      newWrath.isAlive = true;
+      this.state.wraths.set(newWrath.id, newWrath);
+      this.broadcast("wrathSpawned", { id: newWrath.id, x: newWrath.x, y: newWrath.y });
+    }, this.state.rateOfSpawn);
+
     const vegetables: RecipeIngredient[] = this.recipe.ingredients;
       vegetables.forEach((ing: RecipeIngredient) => {
           const x = Math.random()*this.mapWidth;
