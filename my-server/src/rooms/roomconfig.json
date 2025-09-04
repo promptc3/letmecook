@@ -1,0 +1,29 @@
+{
+    "map": {
+        "width": 3840,
+        "height": 3840,
+        "tileSize": 128
+    },
+    "game": {
+        "maxPlayers": 4,
+        "foodItemAmount": 50,
+        "wrathSpawnInterval": 5,
+        "wrathUpdateInterval": 1,
+        "powerUpAmount": 30,
+        "wrathRadius": 256,
+        "wrathSpeed": 100,
+        "wrathDamage": 10,
+        "wrathSeperation": 128,
+        "maxWraths": 20
+    },
+   "foodCollection": [{
+    "name": "vegetables",
+    "foodItems": [
+        { "name": "Carrot", "texture": "vegetable_carrot" },
+        { "name": "Corn", "texture": "vegetable_corn" },
+        { "name": "Potato", "texture": "vegetable_potato" },
+        { "name": "Brinjal"," texture": "vegetable_brinjal" },
+        { "name": "Tomato", "texture": "vegetable_tomato" },
+        { "name": "Onion", "texture": "vegetable_onion" }
+   ]}]
+}

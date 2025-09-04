@@ -22,7 +22,7 @@ export class UIScene extends Phaser.Scene {
       this.cameras.main.worldView.y + this.cameras.main.height - 30;
     console.info("Camera width: ", this.cameras.main.width);
     console.info("Camera height: ", this.cameras.main.height);
-    this.powerUpSprite = this.add.image(leftText, topText, "dash-pickup").setScale(2).setAngle(-15);
+    this.powerUpSprite = this.add.image(leftText, topText, "dash-pickup").setScale(0.7).setAngle(-15);
     this.powerUpText = this.add.text(leftText + 30, topText, "0", fontConfig);
     this.powerUpText.setOrigin(0.5);
     this.powerUpText.setScrollFactor(0); // Fix to camera

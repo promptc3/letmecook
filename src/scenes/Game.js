@@ -311,11 +311,22 @@ export class Game extends Phaser.Scene {
 
     // Listen for wrath spawn message
     this.room.onMessage("wrathSpawned", (data) => {
-      const { wrathId, x, y } = data;
-      console.log(`Wrath spawned: ${wrathId} at (${x}, ${y})`)
+      const { id, x, y } = data;
+      console.log(`Wrath spawned: ${id} at (${x}, ${y})`)
       // spawn a wrath locally
-      const newWrath = new Wrath(this, x, y, 'mushroomChild', wrathId);
+      const newWrath = new Wrath(this, x, y, 'mushroomChild', id);
       this.wraths.add(newWrath);
+    });
+    this.room.onMessage("wrathUpdated", (data) => {
+      const { id, x, y, forceX, forceY } = data;
+      const wrath = this.wraths.getChildren().find(w => w.getId() === id);
+      if (wrath) {
+        console.log(`Wrath updated: ${id} with velocity (${forceX}, ${forceY})`)
+        const newX = Phaser.Math.Linear(wrath.x, x, 0.1);
+        const newY = Phaser.Math.Linear(wrath.y, y, 0.1);
+        wrath.setPosition(newX, newY);
+        // wrath.setVelocity(forceX, forceY);
+      }
     });
   }
 
